@@ -10,6 +10,11 @@ module.exports = (sequelize, DataTypes) => {
           foreignKey:'organizerId'
         }
       )
+      User.hasManyMany(
+        models.Membership,{
+          foreignKey:'memberId'
+        }
+      )
     }
   };
 
