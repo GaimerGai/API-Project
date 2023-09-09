@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
           foreignKey:'organizerId'
         }
       )
-      User.hasManyMany(
+      User.hasMany(
         models.Membership,{
           foreignKey:'memberId'
         }
