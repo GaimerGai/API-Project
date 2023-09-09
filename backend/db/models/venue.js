@@ -11,15 +11,77 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Venue.belongsTo(
+        models.Group,{
+          foreignKey:'groupId'
+        }
+      )
     }
   }
   Venue.init({
-    groupId: DataTypes.INTEGER,
-    address: DataTypes.STRING,
-    city: DataTypes.STRING,
-    state: DataTypes.STRING,
-    lat: DataTypes.FLOAT,
-    lng: DataTypes.FLOAT
+    groupId:{
+      type:DataTypes.INTEGER,
+      allowNull:false,
+    },
+    address:{
+      type:DataTypes.STRING,
+      allowNull:false,
+      validate:{
+        notEmpty:true,
+        isAlphanumeric:true,
+        notNull:{
+          args:true,
+          msg:"Street address is required"
+        }
+      }
+    },
+    city:{
+      type:DataTypes.STRING,
+      allowNull:false,
+      validate:{
+        notEmpty:true,
+        isAlpha:true,
+        notNull:{
+          args:true,
+          msg:"City is required"
+        }
+      }
+    },
+    state:{
+      type:DataTypes.STRING,
+      allowNull:false,
+      validate:{
+        notEmpty:true,
+        len:{
+          args:[2,2],
+          msg:"State is required"
+        }
+      }
+    },
+    lat:{
+      type:DataTypes.FLOAT,
+      allowNull:false,
+      validate:{
+        isNumeric:true,
+        isFloat:true,
+        notNull:{
+          args:true,
+          msg:"Latitude is not valid"
+        }
+      }
+    },
+    lng:{
+      type:DataTypes.FLOAT,
+      allowNull:false,
+      validate:{
+        isNumeric:true,
+        isFloat:true,
+        notNull:{
+          args:true,
+          msg:"Longitude is not valid"
+        }
+      }
+    },
   }, {
     sequelize,
     modelName: 'Venue',
