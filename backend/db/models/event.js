@@ -40,8 +40,11 @@ module.exports = (sequelize, DataTypes) => {
       type:DataTypes.STRING,
       allowNull:false,
       validate:{
-        len:[3],
-        isAlphanumeric:true
+        isAlphanumeric:true,
+        len:{
+          args:[5],
+          msg:"Name must be at least 5 characters"
+        },
       },
     },
     type:{
@@ -58,7 +61,10 @@ module.exports = (sequelize, DataTypes) => {
       type:DataTypes.INTEGER,
       allowNull:false,
       validate:{
-        isInt:true,
+        isInt:{
+          args:true,
+          msg:"Capacity must be an integer",
+        }
       },
     },
     price:{
@@ -76,7 +82,10 @@ module.exports = (sequelize, DataTypes) => {
       type:DataTypes.STRING,
       allowNull:false,
       validate:{
-        notEmpty: true,
+        notEmpty:{
+          args:true,
+          msg:"Description is required"
+        },
       },
     },
     startDate:{
