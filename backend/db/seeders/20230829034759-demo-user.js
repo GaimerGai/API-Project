@@ -18,6 +18,7 @@ module.exports = {
         username: 'Demo-lition',
         hashedPassword: bcrypt.hashSync('password')
       },
+      
       {
         firstName:'Fake',
         lastName:'UserOne',
@@ -36,6 +37,7 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
+
     if (process.env.NODE_ENV === 'production'){
       options.tableName = 'Users';
       const Op = Sequelize.Op;
