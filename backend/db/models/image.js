@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
       )
       Image.belongsTo(
         models.Event,{
-          foreignKey:'imageableId',
+          foreignKey:'imagableId',
           constraints:false,
           scope:{
             imagableType:'event'
