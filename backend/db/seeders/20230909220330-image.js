@@ -13,20 +13,20 @@ module.exports = {
       {
         url: 'https://example.com/image1.jpg', // URL of the image
         preview: true, // Whether it's a preview (true/false)
-        imagableType: 'group', // 'group' or 'event' depending on the association
-        imagableId: 1, // ID of the associated group or event
+        imageableType: 'Group', // 'group' or 'event' depending on the association
+        imageableId: 1, // ID of the associated group or event
       },
       {
         url: 'https://example.com/image2.jpg',
         preview: false,
-        imagableType: 'event',
-        imagableId: 1,
+        imageableType: 'Event',
+        imageableId: 1,
       },
       {
         url: 'https://example.com/image3.jpg',
         preview: true,
-        imagableType: 'group',
-        imagableId: 2,
+        imageableType: 'Group',
+        imageableId: 2,
       },
     ]);
   },
@@ -36,7 +36,7 @@ module.exports = {
       options.tableName = 'Images';
       const Op = Sequelize.Op;
       return queryInterface.bulkDelete(options, {
-        imageableType: { [Op.in]: ['group', 'event'] }
+        imageableType: { [Op.in]: ['Group', 'Event'] }
       }, {});
     }
     else{
