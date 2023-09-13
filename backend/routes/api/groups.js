@@ -5,20 +5,9 @@ const { check, validationResult } = require('express-validator');
 const { handleValidationErrors } = require('../../utils/validation');
 const { setTokenCookie, restoreUser, requireAuth } = require('../../utils/auth');
 const { User, Group, Membership, Image, Venue } = require('../../db/models');
-const membership = require('../../db/models/membership');
+
 
 const router = express.Router();
-
-const validateLogin = [
-  check('credential')
-    .exists({ checkFalsy: true })
-    .notEmpty()
-    .withMessage('Please provide a valid email or username.'),
-  check('password')
-    .exists({ checkFalsy: true })
-    .withMessage('Please provide a password.'),
-  handleValidationErrors
-];
 
 // Validation middleware for the request body
 const validateGroup = [
@@ -311,6 +300,104 @@ router.put( //Edit a Group
       return res.status(500).json({ error: 'Internal server error' });
     }
   });
+
+  router.get( //Get All Venues for a Group specified by its id
+    '/:groupId/venues',
+    requireAuth,
+    async (req, res) => {
+      const { groupId } = req.params;
+
+      try {
+        const group = await Group.findByPk(groupId, {
+          include: [
+            {
+              model: Membership,
+              where: {
+                memberId: req.user.id,
+                [Op.or]: [{ status: 'co-host' }, { status: 'member' }],
+              },
+              required: false, // This makes it an outer join
+            },
+          ],
+        });
+
+        if (!group) {
+          return res.status(404).json({ message: "Group couldn't be found" });
+        }
+
+        const isOrganizer = group.organizerId === req.user.id;
+        const isCoHostOrMember = group.Memberships.length > 0;
+
+        if (!isOrganizer && !isCoHostOrMember) {
+          return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        const venues = await Venue.findAll({ where: { groupId } });
+
+        return res.status(200).json({ Venues: venues });
+      } catch (error) {
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+  );
+
+  router.post( //Create a new Venue for a Group specified by its id
+    '/:groupId/venues',
+    requireAuth,
+    async (req, res) => {
+      const { groupId } = req.params;
+      const { address, city, state, lat, lng } = req.body;
+
+      try {
+        const group = await Group.findByPk(groupId, {
+          include: [
+            {
+              model: Membership,
+              where: {
+                memberId: req.user.id,
+                [Op.or]: [{ status: 'co-host' }, { status: 'member' }],
+              },
+              required: false, // This makes it an outer join
+            },
+          ],
+        });
+
+        if (!group) {
+          return res.status(404).json({ message: "Group couldn't be found" });
+        }
+
+        const isOrganizer = group.organizerId === req.user.id;
+        const isCoHostOrMember = group.Memberships.length > 0;
+
+        if (!isOrganizer && !isCoHostOrMember) {
+          return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        // Validate the request body
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ message: 'Bad Request', errors: errors.array() });
+        }
+        console.log("WE ARE HERE");
+        console.log(typeof address,typeof city);
+
+        const newVenue = await Venue.create({
+          groupId,
+          address,
+          city,
+          state,
+          lat,
+          lng,
+        });
+
+        return res.status(200).json(newVenue);
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+  );
+
 
   router.delete(
     '/:groupId',
