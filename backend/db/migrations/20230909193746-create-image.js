@@ -27,11 +27,11 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         allowNull:false,
       },
-      imagableType: {
+      imageableType: {
         type: Sequelize.STRING,
         allowNull:false,
       },
-      imagableId: {
+      imageableId: {
         type: Sequelize.INTEGER,
         allowNull:false,
       },
