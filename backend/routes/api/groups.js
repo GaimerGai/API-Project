@@ -20,6 +20,7 @@ const validateLogin = [
   handleValidationErrors
 ];
 
+// Validation middleware for the request body
 const validateGroup = [
   check('name')
     .isLength({ max: 60 })
@@ -33,8 +34,40 @@ const validateGroup = [
   check('private')
     .isBoolean()
     .withMessage('Private must be a boolean'),
-  check('city').notEmpty().withMessage('City is required'),
-  check('state').notEmpty().withMessage('State is required'),
+  check('city')
+    .notEmpty()
+    .withMessage('City is required'),
+  check('state')
+    .notEmpty()
+    .withMessage('State is required'),
+];
+
+// Validation middleware for the request body on updates
+const validateGroupUpdate = [
+  check('name')
+    .optional()
+    .isLength({ max: 60 })
+    .withMessage('Name must be 60 characters or less'),
+  check('about')
+    .optional()
+    .isLength({ min: 50 })
+    .withMessage('About must be 50 characters or more'),
+  check('type')
+    .optional()
+    .isIn(['Online', 'In person'])
+    .withMessage("Type must be 'Online' or 'In person'"),
+  check('private')
+    .optional()
+    .isBoolean()
+    .withMessage('Private must be a boolean'),
+  check('city')
+    .optional()
+    .notEmpty()
+    .withMessage('City is required'),
+  check('state')
+    .optional()
+    .notEmpty()
+    .withMessage('State is required'),
 ];
 
 const validateImageUrl = [
@@ -53,9 +86,7 @@ router.get( // Get all Groups
 
         const numMembers = await Membership.count({ where: { groupId: group.id } });
 
-        const images = await Image.findAll({ where: { imageableId: group.id, imageableType: 'Group' } });
-
-        console.log('Images for group:', group.name, images);
+        const images = await Image.findAll({ where: { imageableId: group.id, imageableType: 'Group', preview: true, } });
 
         const previewImage = images.length > 0 ? images[0].url : null;
 
@@ -140,23 +171,23 @@ router.get( // Get all Groups joined or organized by the Current User
 
 router.get( //Get details of a Group from an id
   '/:groupId',
-  async(req,res) =>{
+  async (req, res) => {
     const groupId = req.params.groupId;
 
-    try{
+    try {
 
       //Check if Group exists
-      const group = await Group.findByPk(groupId,{
-        include:[
+      const group = await Group.findByPk(groupId, {
+        include: [
           {
-            model:Image,
-            model:User,
-            model:Venue,
+            model: Image,
+            model: User,
+            model: Venue,
           },
         ],
       });
 
-      if (!group){
+      if (!group) {
         return res.status(404).json({ message: "Group couldn't be found" });
       }
       //Calculate numMembers
@@ -174,13 +205,13 @@ router.get( //Get details of a Group from an id
         createdAt: group.createdAt,
         updatedAt: group.updatedAt,
         numMembers: numMembers,
-        GroupImages:group.Images,
+        GroupImages: group.Images,
         Organizer: group.User,
-        Venues:group.Venues,
+        Venues: group.Venues,
       };
 
       return res.status(200).json(response);
-    }catch(error){
+    } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
     }
@@ -214,37 +245,71 @@ router.post( //Add an Image to a Group based on the Group's id
   '/:groupId/images',
   requireAuth,
   validateImageUrl,
-  async(req,res)=>{
+  async (req, res) => {
     const groupId = req.params.groupId;
-    const {url, preview} = req.body;
+    const { url, preview } = req.body;
 
-    try{
+    try {
       //Check if the group exists
       const group = await Group.findByPk(groupId);
 
-      if(!group){
-        return res.status(404).json({message: "Group couldn't be found"});
+      if (!group) {
+        return res.status(404).json({ message: "Group couldn't be found" });
       }
 
       //Check if the current user is the organizer of the group
-      if (group.organizerId !== req.user.id){
-        return res.status(401).json({message: "Unauthorized. You are not the organizer of this group."});
+      if (group.organizerId !== req.user.id) {
+        return res.status(401).json({ message: "Unauthorized. You are not the organizer of this group." });
       }
 
       //Create a new image for the group
       const image = await Image.create({
         url,
         preview,
-        imageableType:'Group',
+        imageableType: 'Group',
         imageableId: groupId,
       });
 
       return res.status(200).json(image);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({error: 'Internal server error'});
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }
 );
+
+router.put( //Edit a Group
+  '/:groupId',
+  requireAuth,
+  validateGroupUpdate,
+  async (req, res) => {
+    const { groupId } = req.params;
+
+    try {
+      //Check if the group exists
+      const group = await Group.findByPk(groupId);
+
+      if (!group) {
+        return res.status(404).json({ message: "Group couldn't be found" });
+      }
+
+      if (group.organizerId !== req.user.id) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const updatedGroup = await group.update({
+        name: req.body.name,
+        about: req.body.about,
+        type: req.body.type,
+        private: req.body.private,
+        city: req.body.city,
+        state: req.body.state,
+      });
+
+      return res.status(200).json(updatedGroup);
+    } catch (error) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 
 module.exports = router;
