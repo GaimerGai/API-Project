@@ -312,4 +312,28 @@ router.put( //Edit a Group
     }
   });
 
+  router.delete(
+    '/:groupId',
+    requireAuth,
+    async(req,res) =>{
+      const { groupId } = req.params;
+
+      try{
+        const group = await Group.findByPk(groupId);
+
+        if (!group) {
+          return res.status(404).json({ message: "Group couldn't be found" });
+        }
+
+        if (group.organizerId !== req.user.id) {
+          return res.status(403).json({ message: "Unauthorized" });
+        }
+        await group.destroy();
+
+        return res.status(200).json({message: "Successfully deleted"})
+      }catch(error){
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+  )
 module.exports = router;
