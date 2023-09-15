@@ -13,10 +13,10 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Image.belongsTo(
         models.Group,{
-          foreignKey:'imagableId',
+          foreignKey:'imageableId',
           constraints:false,
           scope:{
-            imagableType:'group'
+            imageableType:'Group'
           },
         }
       )
@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
           foreignKey:'imageableId',
           constraints:false,
           scope:{
-            imagableType:'event'
+            imageableType:'Event'
           },
         }
       )
@@ -40,11 +40,11 @@ module.exports = (sequelize, DataTypes) => {
       type:DataTypes.BOOLEAN,
       allowNull:false,
     },
-    imagableType:{
+    imageableType:{
       type:DataTypes.STRING,
       allowNull:false,
     },
-    imagableId:{
+    imageableId:{
       type:DataTypes.INTEGER,
       allowNull:false,
     },

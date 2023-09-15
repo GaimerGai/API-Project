@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
       type:DataTypes.STRING,
       allowNull:false,
       validate:{
-        isAlphanumeric:true,
+        // isAlphanumeric:true,
         len:{
           args:[5],
           msg:"Name must be at least 5 characters"
@@ -60,10 +60,10 @@ module.exports = (sequelize, DataTypes) => {
       type:DataTypes.STRING,
       allowNull:false,
       validate:{
-        equals:{
-          args:[['Online', 'In person']],
-          msg: 'Type must be Online or In person',
-        }
+        // equals:{
+        //   args:[['Online', 'In person']],
+        //   msg: 'Type must be Online or In person',
+        // }
       },
     },
     capacity:{
