@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull:false,
       validate:{
         notEmpty:true,
-        isAlphanumeric:true,
+        // isAlphanumeric:true,
         notNull:{
           args:true,
           msg:"Street address is required"
@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull:false,
       validate:{
         notEmpty:true,
-        isAlpha:true,
+        // isAlpha:true,
         notNull:{
           args:true,
           msg:"City is required"

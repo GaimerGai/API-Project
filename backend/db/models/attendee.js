@@ -27,11 +27,11 @@ module.exports = (sequelize, DataTypes) => {
     status:{
       type:DataTypes.STRING,
       allowNull:false,
-      validate:{
-        equals:{
-          args:[['attending', 'pending', 'waitlist']],
-        }
-      },
+      // validate:{
+      //   equals:{
+      //     args:[['attending', 'pending', 'waitlist']],
+      //   }
+      // },
     },
     userId:{
       type:DataTypes.INTEGER,
