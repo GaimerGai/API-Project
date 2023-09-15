@@ -122,6 +122,29 @@ router.get( // Get all Groups
     }
   });
 
+router.post( //Create a Group
+  '/',
+  requireAuth,
+  validateGroup,
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ message: 'Bad Request', errors: errors.array() });
+    }
+
+    try {
+
+      const newGroup = await Group.create({
+        organizerId: req.user.id,
+        ...req.body,
+      });
+      return res.status(201).json(newGroup);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
 router.get( // Get all Groups joined or organized by the Current User
   '/current',
   requireAuth,
@@ -179,6 +202,7 @@ router.get( // Get all Groups joined or organized by the Current User
   }
 );
 
+
 router.get( //Get details of a Group from an id
   '/:groupId',
   async (req, res) => {
@@ -233,66 +257,6 @@ router.get( //Get details of a Group from an id
   }
 )
 
-router.post( //Create a Group
-  '/',
-  requireAuth,
-  validateGroup,
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ message: 'Bad Request', errors: errors.array() });
-    }
-
-    try {
-
-      const newGroup = await Group.create({
-        organizerId: req.user.id,
-        ...req.body,
-      });
-      return res.status(201).json(newGroup);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-router.post( //Add an Image to a Group based on the Group's id
-  '/:groupId/images',
-  requireAuth,
-  validateImageUrl,
-  async (req, res) => {
-    const groupId = req.params.groupId;
-    const { url, preview } = req.body;
-
-    try {
-      //Check if the group exists
-      const group = await Group.findByPk(groupId);
-
-      if (!group) {
-        return res.status(404).json({ message: "Group couldn't be found" });
-      }
-
-      //Check if the current user is the organizer of the group
-      if (group.organizerId !== req.user.id) {
-        return res.status(401).json({ message: "Unauthorized. You are not the organizer of this group." });
-      }
-
-      //Create a new image for the group
-      const image = await Image.create({
-        url,
-        preview,
-        imageableType: 'Group',
-        imageableId: groupId,
-      });
-
-      return res.status(200).json(image);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-);
-
 router.put( //Edit a Group
   '/:groupId',
   requireAuth,
@@ -326,6 +290,31 @@ router.put( //Edit a Group
       return res.status(500).json({ error: 'Internal server error' });
     }
   });
+
+router.delete( //Gelete a Group
+  '/:groupId',
+  requireAuth,
+  async (req, res) => {
+    const { groupId } = req.params;
+
+    try {
+      const group = await Group.findByPk(groupId);
+
+      if (!group) {
+        return res.status(404).json({ message: "Group couldn't be found" });
+      }
+
+      if (group.organizerId !== req.user.id) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      await group.destroy();
+
+      return res.status(200).json({ message: "Successfully deleted" })
+    } catch (error) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+)
 
 router.get( //Get all Events of a Group specified by its id
   '/:groupId/events',
@@ -390,66 +379,343 @@ router.get( //Get all Events of a Group specified by its id
     }
   });
 
-  router.post( //Create an Event for a Group specified by its id
-    '/:groupId/events',
-    requireAuth,
-    validateEvent,
-    async (req, res) => {
-      const { groupId } = req.params;
-      const errors = validationResult(req);
+router.post( //Create an Event for a Group specified by its id
+  '/:groupId/events',
+  requireAuth,
+  validateEvent,
+  async (req, res) => {
+    const { groupId } = req.params;
+    const errors = validationResult(req);
 
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ message: 'Bad Request', errors: errors.array() });
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ message: 'Bad Request', errors: errors.array() });
+    }
+
+    try {
+      // Check if Group exists
+      const group = await Group.findByPk(groupId, {
+        include: [
+          {
+            model: Membership,
+            where: {
+              memberId: req.user.id,
+              status: 'co-host',
+            },
+            required: false, // This makes it an outer join
+          },
+        ],
+      });
+
+      if (!group) {
+        return res.status(404).json({ message: "Group couldn't be found" });
       }
 
-      try {
-        // Check if Group exists
-        const group = await Group.findByPk(groupId,{
-          include: [
-            {
-              model: Membership,
-              where: {
-                memberId: req.user.id,
-                status: 'co-host',
-              },
-              required: false, // This makes it an outer join
-            },
-          ],
+      // Check if the user is authorized to create an event
+      const isOrganizer = group.organizerId === req.user.id;
+      const isCoHostOrMember = group.Memberships.length > 0;
+
+      if (!isOrganizer && !isCoHostOrMember) {
+        return res.status(403).json({ message: 'Unauthorized' });
+      }
+
+      // Create a new event
+      const event = await Event.create({
+        groupId: group.id,
+        venueId: req.body.venueId,
+        name: req.body.name,
+        type: req.body.type,
+        capacity: req.body.capacity,
+        price: req.body.price,
+        description: req.body.description,
+        startDate: req.body.startDate,
+        endDate: req.body.endDate,
+      });
+
+      return res.status(200).json(event);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+router.post( //Add an Image to a Group based on the Group's id
+  '/:groupId/images',
+  requireAuth,
+  validateImageUrl,
+  async (req, res) => {
+    const groupId = req.params.groupId;
+    const { url, preview } = req.body;
+
+    try {
+      //Check if the group exists
+      const group = await Group.findByPk(groupId);
+
+      if (!group) {
+        return res.status(404).json({ message: "Group couldn't be found" });
+      }
+
+      //Check if the current user is the organizer of the group
+      if (group.organizerId !== req.user.id) {
+        return res.status(401).json({ message: "Unauthorized. You are not the organizer of this group." });
+      }
+
+      //Create a new image for the group
+      const image = await Image.create({
+        url,
+        preview,
+        imageableType: 'Group',
+        imageableId: groupId,
+      });
+
+      return res.status(200).json(image);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+router.get( //Get all Members of a Group Specified by its id
+  '/:groupId/members',
+  requireAuth,
+  async (req, res) => {
+    const groupId = req.params.groupId;
+
+    try {
+      // Check if the group exists
+      const group = await Group.findByPk(groupId);
+
+      if (!group) {
+        return res.status(404).json({ message: "Group couldn't be found" });
+      }
+
+      // Check if the current user is the organizer or a co-host
+      const isOrganizerOrCoHost = group.organizerId === req.user.id;
+      const memberships = await Membership.findAll({
+        where: { groupId },
+        include: {
+          model: User,
+          attributes: ['id', 'firstName', 'lastName'],
+        },
+      });
+
+      let members = memberships.map((membership) => {
+        const { id, firstName, lastName } = membership.User;
+        const { status } = membership;
+        return {
+          id,
+          firstName,
+          lastName,
+          Membership: {
+            status,
+          },
+        };
+      });
+
+      // Filter out members with a status of "pending" if the user is not the organizer or co-host
+      if (!isOrganizerOrCoHost) {
+        members = members.filter((member) => member.Membership.status !== 'pending');
+      }
+
+      return res.status(200).json({ Members: members });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+router.post( //Request a Membership for a Group based on the Group's id
+  '/:groupId/membership',
+  requireAuth,
+  async (req, res) => {
+    const groupId = req.params.groupId;
+    const memberId = req.user.id;
+
+    try {
+      // Check if the group exists
+      const group = await Group.findByPk(groupId);
+
+      if (!group) {
+        return res.status(404).json({ message: "Group couldn't be found" });
+      }
+
+      // Check if the user already has a membership request for the group
+      const existingMembershipRequest = await Membership.findOne({
+        where: {
+          groupId,
+          memberId,
+          status: 'pending',
+        },
+      });
+
+      if (existingMembershipRequest) {
+        return res.status(400).json({ message: 'Membership has already been requested' });
+      }
+
+      // Check if the user is already a member of the group
+      const existingMembership = await Membership.findOne({
+        where: {
+          groupId,
+          memberId,
+          status: 'accepted',
+        },
+      });
+
+      if (existingMembership) {
+        return res.status(400).json({ message: 'User is already a member of the group' });
+      }
+
+      // Create a new membership request for the group
+      const newMembershipRequest = await Membership.create({
+        groupId,
+        memberId,
+        status: 'pending',
+      });
+
+      return res.status(200).json({
+        memberId: newMembershipRequest.memberId,
+        status: newMembershipRequest.status,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+router.put( //Change the status of a membership for a group specified by id
+  '/:groupId/membership',
+  requireAuth,
+  async (req, res) => {
+    const groupId = req.params.groupId;
+    const { memberId, status } = req.body;
+
+    try {
+      // Check if the group exists
+      const group = await Group.findByPk(groupId);
+
+      if (!group) {
+        return res.status(404).json({ message: 'Group couldn\'t be found' });
+      }
+
+      // Check if the user is authorized to change the membership status
+      const isOrganizer = group.organizerId === req.user.id;
+      const isCoHost = await Membership.findOne({
+        where: {
+          groupId,
+          memberId: req.user.id,
+          status: 'co-host',
+        },
+      });
+
+      if (status === 'pending') {
+        return res.status(400).json({
+          message: 'Validations Error',
+          errors: { status: 'Cannot change a membership status to pending' },
         });
+      }
 
-        if (!group) {
-          return res.status(404).json({ message: "Group couldn't be found" });
-        }
+      if (status === 'member') {
+        if (isOrganizer || isCoHost) {
+          const membership = await Membership.findOne({
+            where: { groupId, memberId },
+          });
 
-        // Check if the user is authorized to create an event
-        const isOrganizer = group.organizerId === req.user.id;
-        const isCoHostOrMember = group.Memberships.length > 0;
+          if (!membership) {
+            return res.status(404).json({
+              message: 'Membership between the user and the group does not exist',
+            });
+          }
 
-        if (!isOrganizer && !isCoHostOrMember) {
+          membership.status = 'member';
+          await membership.save();
+
+          return res.status(200).json(membership);
+        } else {
           return res.status(403).json({ message: 'Unauthorized' });
         }
+      } else if (status === 'co-host') {
+        if (isOrganizer) {
+          const membership = await Membership.findOne({
+            where: { groupId, memberId },
+          });
 
-        // Create a new event
-        const event = await Event.create({
-          groupId: group.id,
-          venueId: req.body.venueId,
-          name: req.body.name,
-          type: req.body.type,
-          capacity: req.body.capacity,
-          price: req.body.price,
-          description: req.body.description,
-          startDate: req.body.startDate,
-          endDate: req.body.endDate,
+          if (!membership) {
+            return res.status(404).json({
+              message: 'Membership between the user and the group does not exist',
+            });
+          }
+
+          membership.status = 'co-host';
+          await membership.save();
+
+          return res.status(200).json(membership);
+        } else {
+          return res.status(403).json({ message: 'Unauthorized' });
+        }
+      } else {
+        return res.status(400).json({
+          message: 'Validations Error',
+          errors: { status: 'Invalid status' },
         });
-
-        return res.status(200).json(event);
-      } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal server error' });
       }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal server error' });
     }
-  );
+  });
 
+  router.delete( //Delete membership to a group specified by id
+    '/:groupId/membership',
+     requireAuth,
+    async (req, res) => {
+    const groupId = req.params.groupId;
+    const { memberId } = req.body;
+
+    try {
+      // Check if the group exists
+      const group = await Group.findByPk(groupId);
+
+      if (!group) {
+        return res.status(404).json({ message: 'Group couldn\'t be found' });
+      }
+
+      // Check if the user is authorized to delete the membership
+      const isHost = group.organizerId === req.user.id;
+      const isCurrentUser = memberId == req.user.id;
+
+      if (!isHost && !isCurrentUser) {
+        return res.status(403).json({ message: 'Unauthorized' });
+      }
+
+      // Check if the user whose membership is being deleted exists
+      const user = await User.findByPk(memberId);
+
+      if (!user) {
+        return res.status(400).json({
+          message: 'Validation Error',
+          errors: { memberId: 'User couldn\'t be found' },
+        });
+      }
+
+      // Check if the membership exists
+      const membership = await Membership.findOne({
+        where: { groupId, memberId },
+      });
+
+      if (!membership) {
+        return res.status(404).json({ message: 'Membership does not exist for this User' });
+      }
+
+      // Delete the membership
+      await membership.destroy();
+
+      return res.status(200).json({ message: 'Successfully deleted membership from group' });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 
 router.get( //Get All Venues for a Group specified by its id
   '/:groupId/venues',
@@ -552,28 +818,4 @@ router.post( //Create a new Venue for a Group specified by its id
 );
 
 
-router.delete(
-  '/:groupId',
-  requireAuth,
-  async (req, res) => {
-    const { groupId } = req.params;
-
-    try {
-      const group = await Group.findByPk(groupId);
-
-      if (!group) {
-        return res.status(404).json({ message: "Group couldn't be found" });
-      }
-
-      if (group.organizerId !== req.user.id) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-      await group.destroy();
-
-      return res.status(200).json({ message: "Successfully deleted" })
-    } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-)
 module.exports = router;
