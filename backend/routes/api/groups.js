@@ -291,7 +291,7 @@ router.put( //Edit a Group
     }
   });
 
-router.delete( //Gelete a Group
+router.delete( //Delete a Group
   '/:groupId',
   requireAuth,
   async (req, res) => {

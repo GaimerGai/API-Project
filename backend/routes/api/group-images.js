@@ -34,8 +34,6 @@ router.delete('/:imageId', requireAuth, async (req, res) => {
         },
       }));
 
-    console.log('isAuthorized:', isAuthorized);
-
     if (!isAuthorized) {
       return res.status(403).json({ message: 'Unauthorized' });
     }

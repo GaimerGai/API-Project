@@ -504,7 +504,7 @@ router.put( //Edit an Event specified by its id
           where: {
             eventId,
             userId: req.user.id,
-            status: 'co-host', // Modify this to allow 'co-host' status
+            status: 'co-host',
           },
         }));
 
@@ -561,7 +561,7 @@ router.delete( //Delete an Event specified by its id
           where: {
             eventId,
             userId: req.user.id,
-            status: 'co-host', // Modify this to allow 'co-host' status
+            status: 'co-host', 
           },
         }));
 
