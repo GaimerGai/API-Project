@@ -20,18 +20,8 @@ router.delete('/:imageId', requireAuth, async (req, res) => {
       return res.status(404).json({ message: 'Event Image couldn\'t be found' });
     }
 
-    // Find the associated event
-    const event = await Event.findByPk(image.imageableId);
-
-    if (!event) {
-      return res.status(404).json({ message: 'Event Image couldn\'t be found' });
-    }
     // Find the associated group
-    const group = await Group.findByPk(event.groupId);
-
-    if (!group) {
-      return res.status(404).json({ message: 'Event Image couldn\'t be found' });
-    }
+    const group = await Group.findByPk(image.imageableId);
 
     // Check if the user is authorized (organizer or co-host of the group)
     const isAuthorized =

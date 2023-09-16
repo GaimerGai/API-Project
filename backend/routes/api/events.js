@@ -208,11 +208,13 @@ router.get( //Get details of an Event specified by its id
     }
   });
 
-
-router.get( //Get all Attendees of an Event specified by its id
+//Get all Attendees of an Event specified by its id
+router.get( //Get attendance information for a user at a specific event
   '/:eventId/attendees',
+  requireAuth,
   async (req, res) => {
     const eventId = req.params.eventId;
+    const userId = req.user.id;
 
     try {
       // Check if the event exists
@@ -222,65 +224,30 @@ router.get( //Get all Attendees of an Event specified by its id
         return res.status(404).json({ message: "Event couldn't be found" });
       }
 
-      // Check if the user is authorized to view attendees
-      const isAuthorized =
-        req.user &&
-        (req.user.id === event.organizerId ||
-          (await Attendee.findOne({
-            where: {
-              eventId,
-              userId: req.user.id,
-              [Op.or]: [{ status: 'host' }, { status: 'co-host' }],
-            },
-          })));
-
-      if (!isAuthorized) {
-        // User is not authorized to view attendees
-        // Filter out attendees with 'pending' status
-        const attendees = await Attendee.findAll({
-          where: {
-            eventId,
-            status: {
-              [Op.ne]: 'pending',
-            },
-          },
-          include: {
-            model: User,
-            attributes: ['id', 'firstName', 'lastName'],
-          },
-        });
-
-        const formattedAttendees = attendees.map((attendee) => ({
-          id: attendee.User.id,
-          firstName: attendee.User.firstName,
-          lastName: attendee.User.lastName,
-          Attendance: {
-            status: attendee.status,
-          },
-        }));
-
-        return res.status(200).json({ Attendees: formattedAttendees });
-      }
-
-      // User is authorized to view all attendees
-      const attendees = await Attendee.findAll({
-        where: { eventId },
-        include: {
-          model: User,
-          attributes: ['id', 'firstName', 'lastName'],
-        },
+      // Check if the attendance exists
+      const attendee = await Attendee.findOne({
+        where: { eventId, userId },
       });
 
-      const formattedAttendees = attendees.map((attendee) => ({
-        id: attendee.User.id,
-        firstName: attendee.User.firstName,
-        lastName: attendee.User.lastName,
-        Attendance: {
-          status: attendee.status,
-        },
-      }));
+      if (!attendee) {
+        return res.status(404).json({ message: "Attendance between the user and the event does not exist" });
+      }
 
-      return res.status(200).json({ Attendees: formattedAttendees });
+      // Return the attendance information in the desired format
+      const response = {
+        Attendees: [
+          {
+            id: userId, // Assuming you want to include the user's ID
+            firstName: req.user.firstName, // Get the user's first name from the authenticated user
+            lastName: req.user.lastName, // Get the user's last name from the authenticated user
+            Attendance: {
+              status: attendee.status,
+            },
+          },
+        ],
+      };
+
+      return res.status(200).json(response);
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -561,7 +528,7 @@ router.delete( //Delete an Event specified by its id
           where: {
             eventId,
             userId: req.user.id,
-            status: 'co-host', 
+            status: 'co-host',
           },
         }));
 
