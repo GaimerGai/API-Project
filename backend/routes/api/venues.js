@@ -31,59 +31,26 @@ router.put(
   '/:venueId',
   requireAuth,
   validateVenueUpdate,
-  async(req,res) => {
-    const {venueId} = req.params;
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ message: 'Bad Request', errors: errors.array() });
-    }
-
+  async (req, res) => {
     try {
-      const venue = await Venue.findByPk(venueId, {
-        include: [
-          {
-            model: Group,
-            include: [
-              {
-                model: Membership,
-                where: {
-                  memberId: req.user.id,
-                  status: 'co-host',
-                },
-                required: false, // This makes it an outer join
-              },
-            ],
-          },
-        ],
-      });
+      const { venueId } = req.params;
+      const errors = validationResult(req);
 
-      if (!venue) {
-        return res.status(404).json({ message: "Venue couldn't be found" });
+      if (!errors.isEmpty()) {
+        console.log('Validation errors:', errors.array()); // Log validation errors
+        return res.status(400).json({ message: 'Bad Request', errors: errors.array() });
       }
 
-      const { address, city, state, lat, lng } = req.body;
-
-      // Check if the user is authorized to edit the venue
-      const isOrganizer = venue.Group.organizerId === req.user.id;
-      const isCoHost = venue.Group.Memberships.length > 0;
-
-      if (!isOrganizer && !isCoHost) {
-        return res.status(403).json({ message: 'Unauthorized' });
-      }
-
-      venue.address = address;
-      venue.city = city;
-      venue.state = state;
-      venue.lat = lat;
-      venue.lng = lng;
+      const venue = await Venue.findByPk(venueId);
 
       await venue.save();
 
       return res.status(200).json(venue);
     } catch (error) {
+      console.error('Error:', error); // Log any caught errors
       return res.status(500).json({ error: 'Internal server error' });
     }
-  });
+  }
+);
 
 module.exports = router;
