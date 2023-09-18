@@ -86,7 +86,8 @@ const validateEvent = [
   check('description').notEmpty().withMessage('Description is required'),
 ];
 
-router.get( // Get all Groups
+// Get all Groups
+router.get(
   '/',
   async (req, res, next) => {
     try {
@@ -122,18 +123,22 @@ router.get( // Get all Groups
     }
   });
 
-router.post( //Create a Group
+// Create a Group
+router.post(
   '/',
   requireAuth,
   validateGroup,
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ message: 'Bad Request', errors: errors.array() });
+      const errorResponse = {};
+      errors.array().forEach((error) => {
+        errorResponse[error.param] = error.msg;
+      });
+      return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
     }
 
     try {
-
       const newGroup = await Group.create({
         organizerId: req.user.id,
         ...req.body,
@@ -143,7 +148,8 @@ router.post( //Create a Group
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
     }
-  });
+  }
+);
 
 router.get( //Get all Groups joined or organized by the Current User
   '/current',
@@ -376,16 +382,22 @@ router.get( //Get all Events of a Group specified by its id
     }
   });
 
-router.post( //Create an Event for a Group specified by its id
+//Create an Event for a Group specified by its id
+router.post(
   '/:groupId/events',
   requireAuth,
-  validateEvent, // Assuming you have validation middleware
+  validateEvent,
   async (req, res) => {
     const { groupId } = req.params;
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({ message: 'Bad Request', errors: errors.array() });
+      const errorResponse = {};
+      errors.array().forEach((error) => {
+        errorResponse[error.param] = error.msg;
+      });
+
+      return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
     }
 
     try {
@@ -431,6 +443,7 @@ router.post( //Create an Event for a Group specified by its id
   }
 );
 
+
 router.post( //Add an Image to a Group based on the Group's id
   '/:groupId/images',
   requireAuth,
@@ -449,7 +462,7 @@ router.post( //Add an Image to a Group based on the Group's id
 
       //Check if the current user is the organizer of the group
       if (group.organizerId !== req.user.id) {
-        return res.status(401).json({ message: "Unauthorized. You are not the organizer of this group." });
+        return res.status(403).json({ message: "Unauthorized. You are not the organizer of this group." });
       }
 
       //Create a new image for the group

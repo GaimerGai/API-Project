@@ -32,111 +32,111 @@ const validateEvent = [
 router.get( //Get All Events with Query Filters
   '/',
   async (req, res) => {
-  const { page = 1, size = 20, name, type, startDate } = req.query;
+    const { page = 1, size = 20, name, type, startDate } = req.query;
 
-  try {
-    // Validate query parameters
-    const errors = {};
+    try {
+      // Validate query parameters
+      const errors = {};
 
-    if (page && (isNaN(page) || page < 1 || page > 10)) {
-      errors.page = 'Page must be greater than or equal to 1';
-    }
+      if (page && (isNaN(page) || page < 1 || page > 10)) {
+        errors.page = 'Page must be greater than or equal to 1';
+      }
 
-    if (size && (isNaN(size) || size < 1 || size > 20)) {
-      errors.size = 'Size must be greater than or equal to 1';
-    }
+      if (size && (isNaN(size) || size < 1 || size > 20)) {
+        errors.size = 'Size must be greater than or equal to 1';
+      }
 
-    if (type && !['Online', 'In Person'].includes(type)) {
-      errors.type = "Type must be 'Online' or 'In Person'";
-    }
+      if (type && !['Online', 'In Person'].includes(type)) {
+        errors.type = "Type must be 'Online' or 'In Person'";
+      }
 
-    if (startDate && isNaN(Date.parse(startDate))) {
-      errors.startDate = 'Start date must be a valid datetime';
-    }
+      if (startDate && isNaN(Date.parse(startDate))) {
+        errors.startDate = 'Start date must be a valid datetime';
+      }
 
-    if (Object.keys(errors).length > 0) {
-      return res.status(400).json({ message: 'Bad Request', errors });
-    }
+      if (Object.keys(errors).length > 0) {
+        return res.status(400).json({ message: 'Bad Request', errors });
+      }
 
-    // Build query options based on query parameters
-    const options = {
-      include: [
-        {
-          model: Group,
-          attributes: ['id', 'name', 'city', 'state'],
-        },
-        {
-          model: Venue,
-          attributes: ['id', 'city', 'state'],
-        },
-      ],
-      offset: (page - 1) * size,
-      limit: size,
-      where: {},
-    };
-
-    if (name) {
-      options.where.name = name;
-    }
-
-    if (type) {
-      options.where.type = type;
-    }
-
-    if (startDate) {
-      options.where.startDate = {
-        [Op.gte]: new Date(startDate),
+      // Build query options based on query parameters
+      const options = {
+        include: [
+          {
+            model: Group,
+            attributes: ['id', 'name', 'city', 'state'],
+          },
+          {
+            model: Venue,
+            attributes: ['id', 'city', 'state'],
+          },
+        ],
+        offset: (page - 1) * size,
+        limit: size,
+        where: {},
       };
+
+      if (name) {
+        options.where.name = name;
+      }
+
+      if (type) {
+        options.where.type = type;
+      }
+
+      if (startDate) {
+        options.where.startDate = {
+          [Op.gte]: new Date(startDate),
+        };
+      }
+
+      // Fetch events based on query options
+      const events = await Event.findAll(options);
+
+      // Transform and format the response
+      const transformedEvents = await Promise.all(events.map(async (event) => {
+        const group = event.Group;
+        const venue = event.Venue;
+
+        const numAttending = await Attendee.count({ where: { eventId: event.id } });
+
+        const images = await Image.findAll({
+          where: { imageableId: event.id, imageableType: 'Event', preview: true },
+        });
+
+        const previewImage = images.length > 0 ? images[0].url : null;
+
+        return {
+          id: event.id,
+          groupId: event.groupId,
+          venueId: event.venueId,
+          name: event.name,
+          type: event.type,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          numAttending: numAttending,
+          previewImage: previewImage,
+          Group: {
+            id: group.id,
+            name: group.name,
+            city: group.city,
+            state: group.state,
+          },
+          Venue: venue
+            ? {
+              id: venue.id,
+              city: venue.city,
+              state: venue.state,
+            }
+            : null,
+        };
+      }));
+
+      return res.status(200).json({ Events: transformedEvents });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal server error' });
     }
-
-    // Fetch events based on query options
-    const events = await Event.findAll(options);
-
-    // Transform and format the response
-    const transformedEvents = await Promise.all(events.map(async (event) => {
-      const group = event.Group;
-      const venue = event.Venue;
-
-      const numAttending = await Attendee.count({ where: { eventId: event.id } });
-
-      const images = await Image.findAll({
-        where: { imageableId: event.id, imageableType: 'Event', preview: true },
-      });
-
-      const previewImage = images.length > 0 ? images[0].url : null;
-
-      return {
-        id: event.id,
-        groupId: event.groupId,
-        venueId: event.venueId,
-        name: event.name,
-        type: event.type,
-        startDate: event.startDate,
-        endDate: event.endDate,
-        numAttending: numAttending,
-        previewImage: previewImage,
-        Group: {
-          id: group.id,
-          name: group.name,
-          city: group.city,
-          state: group.state,
-        },
-        Venue: venue
-          ? {
-            id: venue.id,
-            city: venue.city,
-            state: venue.state,
-          }
-          : null,
-      };
-    }));
-
-    return res.status(200).json({ Events: transformedEvents });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  });
 
 router.get( //Get details of an Event specified by its id
   '/:eventId',
@@ -285,6 +285,18 @@ router.post( //Request to Attend an Event based on the Event's id
         }
       }
 
+      // Check if the user is a member of the group associated with the event
+      const isMember = await Membership.findOne({
+        where: {
+          groupId: event.groupId,
+          memberId: userId,
+        },
+      });
+
+      if (!isMember) {
+        return res.status(403).json({ message: 'Forbidden. You are not a member of the group' });
+      }
+
       // Create a new attendance request
       const newAttendance = await Attendee.create({
         eventId,
@@ -322,6 +334,20 @@ router.put( //Change the status of an attendance for an event specified by id
 
       if (!attendee) {
         return res.status(404).json({ message: "Attendance between the user and the event does not exist" });
+      }
+
+      // Check if the current user is the organizer or a member with co-host status of the group
+      const isOrganizer = event.organizerId === userId;
+      const isCoHostOrMember = await Membership.findOne({
+        where: {
+          memberId: userId,
+          groupId: event.groupId,
+          [Op.or]: [{ status: 'co-host' }, { status: 'member' }],
+        },
+      });
+
+      if (!isOrganizer && !isCoHostOrMember) {
+        return res.status(403).json({ message: 'Forbidden. You do not have permission to edit the attendance status' });
       }
 
       // Update the status of the attendance
@@ -364,13 +390,13 @@ router.delete( //Delete attendance to an event specified by id
         },
       });
 
-      if (!attendance) {
-        return res.status(404).json({ message: "Attendance does not exist for this User" });
-      }
-
       // Check if the user is authorized to delete the attendance
       if (req.user.id !== attendance.userId && req.user.id !== event.organizerId) {
         return res.status(403).json({ message: "Only the User or organizer may delete an Attendance" });
+      }
+
+      if (!attendance) {
+        return res.status(404).json({ message: "Attendance does not exist for this User" });
       }
 
       // Delete the attendance
@@ -446,7 +472,11 @@ router.put( //Edit an Event specified by its id
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({ message: 'Bad Request', errors: errors.array() });
+      const errorResponse = {};
+      errors.array().forEach((error) => {
+        errorResponse[error.param] = error.msg;
+      });
+      return res.status(400).json({ errors: errorResponse });
     }
 
     try {

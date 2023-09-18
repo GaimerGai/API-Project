@@ -29,7 +29,7 @@ router.delete('/:imageId', requireAuth, async (req, res) => {
       (await Membership.findOne({
         where: {
           groupId: group.id,
-          userId,
+          memberId: req.user.id,
           status: 'co-host',
         },
       }));

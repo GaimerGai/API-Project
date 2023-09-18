@@ -27,6 +27,7 @@ const validateVenueUpdate = [
     .withMessage('Longitude is not valid'),
 ];
 
+//Edit a Venue specified by its id
 router.put(
   '/:venueId',
   requireAuth,
@@ -37,8 +38,12 @@ router.put(
       const errors = validationResult(req);
 
       if (!errors.isEmpty()) {
-        console.log('Validation errors:', errors.array()); // Log validation errors
-        return res.status(400).json({ message: 'Bad Request', errors: errors.array() });
+        const errorResponse = {};
+        errors.array().forEach((error) => {
+          errorResponse[error.param] = error.msg;
+        });
+        console.log('Validation errors:', errorResponse); // Log validation errors
+        return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
       }
 
       const venue = await Venue.findByPk(venueId);
