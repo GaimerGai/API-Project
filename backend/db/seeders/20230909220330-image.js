@@ -18,7 +18,7 @@ module.exports = {
       },
       {
         url: 'https://example.com/image2.jpg',
-        preview: false,
+        preview: true,
         imageableType: 'Event',
         imageableId: 1,
       },

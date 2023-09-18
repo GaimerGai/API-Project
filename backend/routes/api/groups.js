@@ -84,6 +84,22 @@ const validateEvent = [
   check('capacity').isInt().withMessage('Capacity must be an integer'),
   check('price').isFloat().withMessage('Price is invalid'),
   check('description').notEmpty().withMessage('Description is required'),
+  check('startDate').custom((startDate, { req }) => {
+    const { endDate } = req.body;
+    const currentDate = new Date();
+
+    // Check if the start date is in the past
+    if (new Date(startDate) < currentDate) {
+      throw new Error('Start date must be in the future');
+    }
+
+    // Check if the end date is less than the start date
+    if (new Date(endDate) < new Date(startDate)) {
+      throw new Error('End date must be greater than the start date');
+    }
+
+    return true;
+  }),
 ];
 
 // Get all Groups
@@ -266,6 +282,15 @@ router.put( //Edit a Group
   validateGroupUpdate,
   async (req, res) => {
     const { groupId } = req.params;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const errorResponse = {};
+      errors.array().forEach((error) => {
+        errorResponse[error.param] = error.msg;
+      });
+      return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
+    }
 
     try {
       //Check if the group exists
@@ -789,6 +814,15 @@ router.post( //Create a new Venue for a Group specified by its id
   async (req, res) => {
     const { groupId } = req.params;
     const { address, city, state, lat, lng } = req.body;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const errorResponse = {};
+      errors.array().forEach((error) => {
+        errorResponse[error.param] = error.msg;
+      });
+      return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
+    }
 
     try {
       const group = await Group.findByPk(groupId);
@@ -813,15 +847,6 @@ router.post( //Create a new Venue for a Group specified by its id
       if (!isOrganizer && !membership) {
         return res.status(403).json({ message: 'Unauthorized' });
       }
-
-      // Validate the request body
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ message: 'Bad Request', errors: errors.array() });
-      }
-
-      console.log("WE ARE HERE");
-      console.log(typeof address, typeof city);
 
       const newVenue = await Venue.create({
         groupId,

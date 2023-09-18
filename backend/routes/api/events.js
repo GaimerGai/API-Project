@@ -27,6 +27,22 @@ const validateEvent = [
   check('capacity').isInt().withMessage('Capacity must be an integer'),
   check('price').isFloat().withMessage('Price is invalid'),
   check('description').notEmpty().withMessage('Description is required'),
+  check('startDate').custom((startDate, { req }) => {
+    const { endDate } = req.body;
+    const currentDate = new Date();
+
+    // Check if the start date is in the past
+    if (new Date(startDate) < currentDate) {
+      throw new Error('Start date must be in the future');
+    }
+
+    // Check if the end date is less than the start date
+    if (new Date(endDate) < new Date(startDate)) {
+      throw new Error('End date must be greater than the start date');
+    }
+
+    return true;
+  }),
 ];
 
 router.get( //Get All Events with Query Filters
@@ -209,7 +225,7 @@ router.get( //Get details of an Event specified by its id
   });
 
 //Get all Attendees of an Event specified by its id
-router.get( //Get attendance information for a user at a specific event
+router.get( 
   '/:eventId/attendees',
   requireAuth,
   async (req, res) => {
@@ -320,12 +336,19 @@ router.put( //Change the status of an attendance for an event specified by id
     const { status } = req.body;
 
     try {
+      // Log eventId and userId for debugging purposes
+      console.log('eventId:', eventId);
+      console.log('userId:', userId);
+
       // Check if the event exists
       const event = await Event.findByPk(eventId);
 
       if (!event) {
         return res.status(404).json({ message: "Event couldn't be found" });
       }
+
+      // Log the event to check if it's found
+      console.log('Event found:', event);
 
       // Check if the attendance exists
       const attendee = await Attendee.findOne({
@@ -335,6 +358,9 @@ router.put( //Change the status of an attendance for an event specified by id
       if (!attendee) {
         return res.status(404).json({ message: "Attendance between the user and the event does not exist" });
       }
+
+      // Log the attendee to check if it's found
+      console.log('Attendee found:', attendee);
 
       // Check if the current user is the organizer or a member with co-host status of the group
       const isOrganizer = event.organizerId === userId;
