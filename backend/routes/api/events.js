@@ -225,7 +225,7 @@ router.get( //Get details of an Event specified by its id
   });
 
 //Get all Attendees of an Event specified by its id
-router.get( 
+router.get(
   '/:eventId/attendees',
   requireAuth,
   async (req, res) => {
@@ -317,7 +317,7 @@ router.post( //Request to Attend an Event based on the Event's id
       const newAttendance = await Attendee.create({
         eventId,
         userId,
-        status: 'attending',
+        status: 'pending',
       });
 
       return res.status(200).json(newAttendance);
@@ -374,6 +374,11 @@ router.put( //Change the status of an attendance for an event specified by id
 
       if (!isOrganizer && !isCoHostOrMember) {
         return res.status(403).json({ message: 'Forbidden. You do not have permission to edit the attendance status' });
+      }
+      
+      // Check if the new status is "pending" and return an error if it is
+      if (status === 'pending') {
+        return res.status(400).json({ message: 'Cannot change an attendance status to pending' });
       }
 
       // Update the status of the attendance
