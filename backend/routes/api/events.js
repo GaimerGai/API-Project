@@ -225,50 +225,82 @@ router.get( //Get details of an Event specified by its id
   });
 
 //Get all Attendees of an Event specified by its id
-router.get(
-  '/:eventId/attendees',
-  requireAuth,
-  async (req, res) => {
-    const eventId = req.params.eventId;
-    const userId = req.user.id;
+router.get('/:eventId/attendees', async (req, res) => {
+  const eventId = req.params.eventId;
+  const userId = req.user.id;
 
-    try {
-      // Check if the event exists
-      const event = await Event.findByPk(eventId);
+  try {
+    // Check if the event exists
+    const event = await Event.findByPk(eventId);
 
-      if (!event) {
-        return res.status(404).json({ message: "Event couldn't be found" });
-      }
+    if (!event) {
+      return res.status(404).json({ message: "Event couldn't be found" });
+    }
+    
 
-      // Check if the attendance exists
-      const attendee = await Attendee.findOne({
-        where: { eventId, userId },
+    // Check if the user is the organizer of the event or a co-host/member of the group
+    const isOrganizer = event.organizerId === userId;
+    const isCoHostOrMember = await Membership.findOne({
+      where: {
+        groupId: event.groupId,
+        memberId: userId,
+        status: { [Op.or]: ['co-host', 'member'] },
+      },
+    });
+
+    if (!isOrganizer && !isCoHostOrMember) {
+      // If the user is neither the organizer nor a co-host/member,
+      // fetch all members of the group without 'pending' status
+      const members = await Membership.findAll({
+        where: {
+          groupId: event.groupId,
+          memberId: { [Op.ne]: userId }, // Exclude the current user
+          status: { [Op.ne]: 'pending' },
+        },
+        include: [User], // Include user details for members
       });
 
-      if (!attendee) {
-        return res.status(404).json({ message: "Attendance between the user and the event does not exist" });
-      }
-
-      // Return the attendance information in the desired format
+      // Return all members who are not attendees with 'pending' status
       const response = {
-        Attendees: [
-          {
-            id: userId, // Assuming you want to include the user's ID
-            firstName: req.user.firstName, // Get the user's first name from the authenticated user
-            lastName: req.user.lastName, // Get the user's last name from the authenticated user
-            Attendance: {
-              status: attendee.status,
-            },
+        Attendees: members.map((member) => ({
+          id: member.User.id,
+          firstName: member.User.firstName,
+          lastName: member.User.lastName,
+          Attendance: {
+            status: 'not attending', // Assuming 'not attending' for non-attendees
           },
-        ],
+        })),
       };
 
       return res.status(200).json(response);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Internal server error' });
     }
-  });
+
+    // Fetch all attendees of the event, including those with 'pending' status
+    const attendees = await Attendee.findAll({
+      where: { eventId },
+      include: [User], // Include user details for attendees
+    });
+
+    // If the user is the organizer or a co-host/member, return all attendees
+    const response = {
+      Attendees: attendees.map((attendee) => ({
+        id: attendee.User.id,
+        firstName: attendee.User.firstName,
+        lastName: attendee.User.lastName,
+        Attendance: {
+          status: attendee.status,
+        },
+      })),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 
 router.post( //Request to Attend an Event based on the Event's id
   '/:eventId/attendance',
@@ -375,7 +407,7 @@ router.put( //Change the status of an attendance for an event specified by id
       if (!isOrganizer && !isCoHostOrMember) {
         return res.status(403).json({ message: 'Forbidden. You do not have permission to edit the attendance status' });
       }
-      
+
       // Check if the new status is "pending" and return an error if it is
       if (status === 'pending') {
         return res.status(400).json({ message: 'Cannot change an attendance status to pending' });
