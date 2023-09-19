@@ -48,6 +48,11 @@ router.put(
 
       const venue = await Venue.findByPk(venueId);
 
+      // Checks to see if Venue exists before saving
+      if (!venue) {
+        return res.status(404).json({ message: 'Venue couldn\'t be found' });
+      }
+
       await venue.save();
 
       return res.status(200).json(venue);

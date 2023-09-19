@@ -34,6 +34,7 @@ module.exports = {
       imageableId: {
         type: Sequelize.INTEGER,
         allowNull:false,
+        onDelete:'CASCADE',
       },
       createdAt: {
         allowNull: false,

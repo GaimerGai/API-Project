@@ -335,10 +335,13 @@ router.delete( //Delete a Group
       if (group.organizerId !== req.user.id) {
         return res.status(403).json({ message: "Unauthorized" });
       }
-      await group.destroy();
+      console.log('Group to be deleted:', group);
+      await Group.destroy({where: {id:Number(groupId)}});
+
 
       return res.status(200).json({ message: "Successfully deleted" })
     } catch (error) {
+      console.error(error.stack);
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
