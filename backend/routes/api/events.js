@@ -240,34 +240,34 @@ router.get('/:eventId/attendees', async (req, res) => {
 
     // Check if the user is the organizer of the event or a co-host/member of the group
     const isOrganizer = event.organizerId === userId;
-    const isCoHostOrMember = await Membership.findOne({
+    const isCoHost = await Membership.findOne({
       where: {
         groupId: event.groupId,
         memberId: userId,
-        status: { [Op.or]: ['co-host', 'member'] },
+        status: 'co-host' ,
       },
     });
 
-    if (!isOrganizer && !isCoHostOrMember) {
+    if (!isOrganizer && !isCoHost) {
       // If the user is neither the organizer nor a co-host/member,
-      // fetch all members of the group without 'pending' status
-      const members = await Membership.findAll({
+      // fetch all attendee of the group without 'pending' status
+      const attendeesNotPending = await Attendee.findAll({
         where: {
-          groupId: event.groupId,
-          memberId: { [Op.ne]: userId }, // Exclude the current user
+          eventId: eventId,
+          userId: { [Op.ne]: userId }, // Exclude the current user
           status: { [Op.ne]: 'pending' },
         },
-        include: [User], // Include user details for members
+        // include: [User], // Include user details for members
       });
 
-      // Return all members who are not attendees with 'pending' status
+      // Return all attendees who do not have 'pending' status
       const response = {
-        Attendees: members.map((member) => ({
+        Attendees: attendeesNotPending.map((member) => ({
           id: member.User.id,
           firstName: member.User.firstName,
           lastName: member.User.lastName,
           Attendance: {
-            status: 'not attending', // Assuming 'not attending' for non-attendees
+            status: member.status,
           },
         })),
       };

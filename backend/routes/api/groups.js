@@ -205,39 +205,41 @@ router.get(
           type: group.type,
           private: group.private,
           city: group.city,
-            state: group.state,
-            createdAt: group.createdAt,
-            updatedAt: group.updatedAt,
-            numMembers: numMembers,
-            previewImage: group.Images.length > 0 ? group.Images[0].url : null,
-          });
-        }
-        const getMembership = await Membership.findAll({
-          where: { memberId: currentUserId }
-        })
-        console.log(getMembership)
+          state: group.state,
+          createdAt: group.createdAt,
+          updatedAt: group.updatedAt,
+          numMembers: numMembers,
+          previewImage: group.Images.length > 0 ? group.Images[0].url : null,
+        });
+      }
+      const getMembership = await Membership.findAll({
+        where: { memberId: currentUserId }
+      })
+      console.log(getMembership)
 
-        for (const memberShip of getMembership) {
-          const groupCheck = await Group.findOne({
-            where: {id:memberShip.groupId},
-          })
-          if (groupCheck.organizerId !== currentUserId){
-            const getMemGroup = await Group.findAll({
-              where: {
-                id: memberShip.groupId
-              },
-              include: [
-                {
-                  model: Image,
-                  where: {
-                    imageableType: 'Group',
-                  },
-                  required: false,
+      for (const memberShip of getMembership) {
+        const groupCheck = await Group.findOne({
+          where: { id: memberShip.groupId },
+        })
+        console.log("This is GroupCheck.organizerId -------------------------:", groupCheck.organizerId)
+        console.log("This is currentUserID -------------------------:", currentUserId)
+        if (groupCheck.organizerId !== currentUserId) {
+          const getMemGroup = await Group.findOne({
+            where: {
+              id: memberShip.groupId
+            },
+            include: [
+              {
+                model: Image,
+                where: {
+                  imageableType: 'Group',
                 },
-              ],
-            })
-            // Calculate numMembers inside the loop
-            const numMembers = await Membership.count({ where: { groupId: group.id } });
+                required: false,
+              },
+            ],
+          })
+          // Calculate numMembers inside the loop
+            const numMembers = await Membership.count({ where: { groupId: getMemGroup.id } });
             const newGroup = {
               id: getMemGroup.id,
               organizerId: getMemGroup.organizerId,
@@ -254,14 +256,13 @@ router.get(
             }
             totalGroups.push(newGroup)
           }
-        }
-
-        res.status(200).json({ Groups: totalGroups });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
       }
+      res.status(200).json({ Groups: totalGroups });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
     }
+  }
 );
 
 
