@@ -8,7 +8,9 @@ const { User, Group, Membership, Image, Venue, Event, Attendee } = require('../.
 
 const router = express.Router();
 
-router.delete('/:imageId', requireAuth, async (req, res) => {
+router.delete('/:imageId',
+ requireAuth,
+  async (req, res) => {
   const imageId = req.params.imageId;
   const userId = req.user.id;
 

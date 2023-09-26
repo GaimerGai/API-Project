@@ -236,7 +236,7 @@ router.get('/:eventId/attendees', async (req, res) => {
     if (!event) {
       return res.status(404).json({ message: "Event couldn't be found" });
     }
-    
+
 
     // Check if the user is the organizer of the event or a co-host/member of the group
     const isOrganizer = event.organizerId === userId;
@@ -372,6 +372,9 @@ router.put( //Change the status of an attendance for an event specified by id
       console.log('eventId:', eventId);
       console.log('userId:', userId);
 
+      // Log the attendee to check if it's found
+      console.log('Attendee found:', attendee);
+
       // Check if the event exists
       const event = await Event.findByPk(eventId);
 
@@ -396,15 +399,17 @@ router.put( //Change the status of an attendance for an event specified by id
 
       // Check if the current user is the organizer or a member with co-host status of the group
       const isOrganizer = event.organizerId === userId;
-      const isCoHostOrMember = await Membership.findOne({
+      const isCoHost = await Membership.findOne({
         where: {
           memberId: userId,
           groupId: event.groupId,
-          [Op.or]: [{ status: 'co-host' }, { status: 'member' }],
+          status: 'co-host' ,
         },
       });
 
-      if (!isOrganizer && !isCoHostOrMember) {
+      console.log("are you the organizer: ", isOrganizer)
+      console.log("are you a cohost or member: ", isCoHost)
+      if (!isOrganizer && !isCoHost) {
         return res.status(403).json({ message: 'Forbidden. You do not have permission to edit the attendance status' });
       }
 

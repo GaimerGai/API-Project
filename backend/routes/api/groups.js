@@ -167,15 +167,19 @@ router.post(
   }
 );
 
-router.get( //Get all Groups joined or organized by the Current User
+router.get(
   '/current',
   requireAuth,
   async (req, res, next) => {
     try {
       const currentUserId = req.user.id;
+      console.log("current User Id: ", currentUserId);
 
       // Fetch groups without eager loading Membership
       const groups = await Group.findAll({
+        where: {
+          organizerId: currentUserId,
+        },
         include: [
           {
             model: Image,
@@ -185,18 +189,15 @@ router.get( //Get all Groups joined or organized by the Current User
             required: false,
           },
         ],
-        where: {
-          [Op.or]: [
-            { organizerId: currentUserId },
-          ],
-        },
       });
 
-      const formattedGroups = await Promise.all(groups.map(async (group) => {
-        // Calculate numMembers inside the map function
+      const totalGroups = [];
+
+      for (const group of groups) {
+        // Calculate numMembers inside the loop
         const numMembers = await Membership.count({ where: { groupId: group.id } });
 
-        return {
+        totalGroups.push({
           id: group.id,
           organizerId: group.organizerId,
           name: group.name,
@@ -204,22 +205,64 @@ router.get( //Get all Groups joined or organized by the Current User
           type: group.type,
           private: group.private,
           city: group.city,
-          state: group.state,
-          createdAt: group.createdAt,
-          updatedAt: group.updatedAt,
-          numMembers: numMembers,
-          previewImage: group.Images.length > 0 ? group.Images[0].url : null,
-        };
-      }));
+            state: group.state,
+            createdAt: group.createdAt,
+            updatedAt: group.updatedAt,
+            numMembers: numMembers,
+            previewImage: group.Images.length > 0 ? group.Images[0].url : null,
+          });
+        }
+        const getMembership = await Membership.findAll({
+          where: { memberId: currentUserId }
+        })
+        console.log(getMembership)
 
-      res.status(200).json({ Groups: formattedGroups });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Internal server error' });
+        for (const memberShip of getMembership) {
+          const groupCheck = await Group.findOne({
+            where: {id:memberShip.groupId},
+          })
+          if (groupCheck.organizerId !== currentUserId){
+            const getMemGroup = await Group.findAll({
+              where: {
+                id: memberShip.groupId
+              },
+              include: [
+                {
+                  model: Image,
+                  where: {
+                    imageableType: 'Group',
+                  },
+                  required: false,
+                },
+              ],
+            })
+            // Calculate numMembers inside the loop
+            const numMembers = await Membership.count({ where: { groupId: group.id } });
+            const newGroup = {
+              id: getMemGroup.id,
+              organizerId: getMemGroup.organizerId,
+              name: getMemGroup.name,
+              about: getMemGroup.about,
+              type: getMemGroup.type,
+              private: getMemGroup.private,
+              city: getMemGroup.city,
+              state: getMemGroup.state,
+              createdAt: getMemGroup.createdAt,
+              updatedAt: getMemGroup.updatedAt,
+              numMembers: numMembers,
+              previewImage: getMemGroup.Images.length > 0 ? getMemGroup.Images[0].url : null,
+            }
+            totalGroups.push(newGroup)
+          }
+        }
+
+        res.status(200).json({ Groups: totalGroups });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
     }
-  }
 );
-
 
 
 router.get( //Get details of a Group from an id
@@ -336,7 +379,7 @@ router.delete( //Delete a Group
         return res.status(403).json({ message: "Unauthorized" });
       }
       console.log('Group to be deleted:', group);
-      await Group.destroy({where: {id:Number(groupId)}});
+      await Group.destroy({ where: { id: Number(groupId) } });
 
 
       return res.status(200).json({ message: "Successfully deleted" })
