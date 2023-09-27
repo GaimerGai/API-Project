@@ -167,6 +167,8 @@ router.post(
   }
 );
 
+
+//Get all Groups joined or organized by the Current User
 router.get(
   '/current',
   requireAuth,
@@ -221,8 +223,6 @@ router.get(
         const groupCheck = await Group.findOne({
           where: { id: memberShip.groupId },
         })
-        console.log("This is GroupCheck.organizerId -------------------------:", groupCheck.organizerId)
-        console.log("This is currentUserID -------------------------:", currentUserId)
         if (groupCheck.organizerId !== currentUserId) {
           const getMemGroup = await Group.findOne({
             where: {
