@@ -228,6 +228,8 @@ router.get( //Get details of an Event specified by its id
 router.get('/:eventId/attendees', async (req, res) => {
   const eventId = req.params.eventId;
   const userId = req.user.id;
+  let returnObj = [];
+
 
   try {
     // Check if the event exists
@@ -237,63 +239,68 @@ router.get('/:eventId/attendees', async (req, res) => {
       return res.status(404).json({ message: "Event couldn't be found" });
     }
 
-
+    const group = await Group.findByPk(event.groupId);
     // Check if the user is the organizer of the event or a co-host/member of the group
-    const isOrganizer = event.organizerId === userId;
-    const isCoHostOrMember = await Membership.findOne({
+    const isOrganizer = group.organizerId === userId;
+    const isCoHost = await Membership.findOne({
       where: {
         groupId: event.groupId,
         memberId: userId,
-        status: { [Op.or]: ['co-host', 'member'] },
+        status: 'co-host',
       },
     });
 
-    if (!isOrganizer && !isCoHostOrMember) {
+    if (!isOrganizer && !isCoHost) {
       // If the user is neither the organizer nor a co-host/member,
-      // fetch all members of the group without 'pending' status
-      const members = await Membership.findAll({
+      // fetch all attendee of the group without 'pending' status
+      const attendeesNotPending = await Attendee.findAll({
         where: {
-          groupId: event.groupId,
-          memberId: { [Op.ne]: userId }, // Exclude the current user
-          status: { [Op.ne]: 'pending' },
+          eventId: eventId,
+          status:{
+            [Op.ne]: 'pending',
+          }
         },
-        include: [User], // Include user details for members
       });
 
-      // Return all members who are not attendees with 'pending' status
-      const response = {
-        Attendees: members.map((member) => ({
-          id: member.User.id,
-          firstName: member.User.firstName,
-          lastName: member.User.lastName,
+
+      // Return all attendees who do not have 'pending' status
+      const responseIfNotOrganizerAndNotCoHost = [];
+        for (const attendee of attendeesNotPending){
+          const getUserData = await User.findByPk(attendee.userId);
+          responseIfNotOrganizerAndNotCoHost.push({
+            id: getUserData.userId,
+            firstName: getUserData.firstName,
+            lastName: getUserData.lastName,
+            Attendance: {
+              status: attendee.status,
+            },
+          })
+        }
+
+      returnObj.push(responseIfNotOrganizerAndNotCoHost)
+    } else {
+      const attendees = await Attendee.findAll({
+        where: {
+          eventId: eventId,
+        }, // Include user details for attendees
+      });
+
+      // If the user is the organizer or a co-host/member, return all attendees
+      const responseIfOrganizerAndCohost = [];
+      for (const attendee of attendees) {
+        const getUserData = await User.findByPk(attendee.userId);
+        responseIfOrganizerAndCohost.push({
+          id: getUserData.userId,
+          firstName: getUserData.firstName,
+          lastName: getUserData.lastName,
           Attendance: {
-            status: 'not attending', // Assuming 'not attending' for non-attendees
+            status: attendee.status,
           },
-        })),
-      };
-
-      return res.status(200).json(response);
+        })
+      }
+      returnObj.push(responseIfOrganizerAndCohost)
     }
-
-    // Fetch all attendees of the event, including those with 'pending' status
-    const attendees = await Attendee.findAll({
-      where: { eventId },
-      include: [User], // Include user details for attendees
-    });
-
-    // If the user is the organizer or a co-host/member, return all attendees
-    const response = {
-      Attendees: attendees.map((attendee) => ({
-        id: attendee.User.id,
-        firstName: attendee.User.firstName,
-        lastName: attendee.User.lastName,
-        Attendance: {
-          status: attendee.status,
-        },
-      })),
-    };
-
-    return res.status(200).json(response);
+    return res.status(200).json({ "Attendees": returnObj });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -373,7 +380,6 @@ router.put( //Change the status of an attendance for an event specified by id
       console.log('userId:', userId);
 
       // Log the attendee to check if it's found
-      console.log('Attendee found:', attendee);
 
       // Check if the event exists
       const event = await Event.findByPk(eventId);
@@ -389,6 +395,7 @@ router.put( //Change the status of an attendance for an event specified by id
       const attendee = await Attendee.findOne({
         where: { eventId, userId },
       });
+      console.log('Attendee found:', attendee);
 
       if (!attendee) {
         return res.status(404).json({ message: "Attendance between the user and the event does not exist" });
@@ -398,17 +405,19 @@ router.put( //Change the status of an attendance for an event specified by id
       console.log('Attendee found:', attendee);
 
       // Check if the current user is the organizer or a member with co-host status of the group
-      const isOrganizer = event.organizerId === userId;
+      const getGroup = await Group.findByPk(event.groupId);
+      const isOrganizer = getGroup.organizerId === userId;
       const isCoHost = await Membership.findOne({
         where: {
           memberId: userId,
           groupId: event.groupId,
-          status: 'co-host' ,
+          status: 'co-host',
         },
       });
 
-      console.log("are you the organizer: ", isOrganizer)
-      console.log("are you a cohost or member: ", isCoHost)
+      console.log("are you the organizer: ----------------------------------------", isOrganizer)
+      console.log("are you a cohost or member: -------------------------------------------", isCoHost)
+      const group = await Group.findByPk(event.groupId);
       if (!isOrganizer && !isCoHost) {
         return res.status(403).json({ message: 'Forbidden. You do not have permission to edit the attendance status' });
       }
@@ -459,7 +468,8 @@ router.delete( //Delete attendance to an event specified by id
       });
 
       // Check if the user is authorized to delete the attendance
-      if (req.user.id !== attendance.userId && req.user.id !== event.organizerId) {
+      const getGroup = await Group.findByPk(event.groupId);
+      if (req.user.id !== attendance.userId && req.user.id !== getGroup.organizerId) {
         return res.status(403).json({ message: "Only the User or organizer may delete an Attendance" });
       }
 
