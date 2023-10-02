@@ -36,18 +36,22 @@ const validateGroupUpdate = [
   check('name')
     .optional()
     .isLength({ max: 60 })
+    .notEmpty()
     .withMessage('Name must be 60 characters or less'),
   check('about')
     .optional()
     .isLength({ min: 50 })
+    .notEmpty()
     .withMessage('About must be 50 characters or more'),
   check('type')
     .optional()
     .isIn(['Online', 'In person'])
+    .notEmpty()
     .withMessage("Type must be 'Online' or 'In person'"),
   check('private')
     .optional()
     .isBoolean()
+    .notEmpty()
     .withMessage('Private must be a boolean'),
   check('city')
     .optional()
@@ -323,7 +327,7 @@ router.get( //Get details of a Group from an id
 router.put( //Edit a Group
   '/:groupId',
   requireAuth,
-  validateGroupUpdate,
+  validateGroup,
   async (req, res) => {
     const { groupId } = req.params;
     const errors = validationResult(req);

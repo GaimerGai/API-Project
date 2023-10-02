@@ -154,10 +154,12 @@ router.get( //Get All Events with Query Filters
     }
   });
 
-router.get( //Get details of an Event specified by its id
+  //Get details of an Event specified by its id
+router.get(
   '/:eventId',
   async (req, res) => {
     const eventId = req.params.eventId;
+    console.log("This is the eventID-------------------------", eventId)
 
     try {
       // Find the event by its ID
@@ -170,14 +172,18 @@ router.get( //Get details of an Event specified by its id
           {
             model: Venue,
             attributes: ['id', 'address', 'city', 'state', 'lat', 'lng'],
+            required: false, // If no venue, allows for continuing of code
           },
           {
             model: Image,
             attributes: ['id', 'url', 'preview'],
             where: { imageableType: 'Event' },
+            required: false, // If no Image, allows for continuing of code
           },
         ],
       });
+
+      console.log("This is the event:==================", event)
 
       if (!event) {
         return res.status(404).json({ message: "Event couldn't be found" });
@@ -206,15 +212,15 @@ router.get( //Get details of an Event specified by its id
           city: event.Group.city,
           state: event.Group.state,
         },
-        Venue: {
+        Venue: event.Venue ? { // Check if Venue is not null
           id: event.Venue.id,
           address: event.Venue.address,
           city: event.Venue.city,
           state: event.Venue.state,
           lat: event.Venue.lat,
           lng: event.Venue.lng,
-        },
-        EventImages: event.Images,
+        }: null, // Set Venue to null if it's null in the database
+        EventImages: event.Images.length > 0 ? event.Images : null, // Set Image to null if it's null in the database
       };
 
       return res.status(200).json(formattedEvent);
@@ -222,7 +228,9 @@ router.get( //Get details of an Event specified by its id
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
     }
-  });
+  }
+);
+
 
 //Get all Attendees of an Event specified by its id
 router.get('/:eventId/attendees', async (req, res) => {
@@ -256,7 +264,7 @@ router.get('/:eventId/attendees', async (req, res) => {
       const attendeesNotPending = await Attendee.findAll({
         where: {
           eventId: eventId,
-          status:{
+          status: {
             [Op.ne]: 'pending',
           }
         },
@@ -265,17 +273,17 @@ router.get('/:eventId/attendees', async (req, res) => {
 
       // Return all attendees who do not have 'pending' status
       const responseIfNotOrganizerAndNotCoHost = [];
-        for (const attendee of attendeesNotPending){
-          const getUserData = await User.findByPk(attendee.userId);
-          responseIfNotOrganizerAndNotCoHost.push({
-            id: getUserData.userId,
-            firstName: getUserData.firstName,
-            lastName: getUserData.lastName,
-            Attendance: {
-              status: attendee.status,
-            },
-          })
-        }
+      for (const attendee of attendeesNotPending) {
+        const getUserData = await User.findByPk(attendee.userId);
+        responseIfNotOrganizerAndNotCoHost.push({
+          id: getUserData.userId,
+          firstName: getUserData.firstName,
+          lastName: getUserData.lastName,
+          Attendance: {
+            status: attendee.status,
+          },
+        })
+      }
 
       returnObj.push(responseIfNotOrganizerAndNotCoHost)
     } else {
@@ -371,15 +379,15 @@ router.put( //Change the status of an attendance for an event specified by id
   requireAuth,
   async (req, res) => {
     const eventId = req.params.eventId;
-    const userId = req.user.id;
-    const { status } = req.body;
+    const loggedInUserId = req.user.id;
+    const { userId, status } = req.body;
+    console.log("This is the status:--------------",status)
+    console.log("This is the userID:--------------",userId)
 
     try {
       // Log eventId and userId for debugging purposes
       console.log('eventId:', eventId);
-      console.log('userId:', userId);
-
-      // Log the attendee to check if it's found
+      console.log('userId:', loggedInUserId);
 
       // Check if the event exists
       const event = await Event.findByPk(eventId);
@@ -406,10 +414,10 @@ router.put( //Change the status of an attendance for an event specified by id
 
       // Check if the current user is the organizer or a member with co-host status of the group
       const getGroup = await Group.findByPk(event.groupId);
-      const isOrganizer = getGroup.organizerId === userId;
+      const isOrganizer = getGroup.organizerId === loggedInUserId;
       const isCoHost = await Membership.findOne({
         where: {
-          memberId: userId,
+          memberId: loggedInUserId,
           groupId: event.groupId,
           status: 'co-host',
         },
