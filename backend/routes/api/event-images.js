@@ -16,10 +16,12 @@ router.delete('/:imageId',
 
     try {
       // Find the image
-      const image = await Image.findOne({where: {
-        imageId: imageId,
+      const image = await Image.findOne({
+        where: {
+        id:imageId,
         imageableType: 'Event',
       }});
+      console.log("This is the Image:--------------------------",image)
 
       if (!image) {
         return res.status(404).json({ message: 'Event Image couldn\'t be found' });

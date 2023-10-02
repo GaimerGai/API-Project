@@ -362,10 +362,14 @@ router.post( //Request to Attend an Event based on the Event's id
 
       // Create a new attendance request
       const newAttendance = await Attendee.create({
-        eventId,
         userId,
         status: 'pending',
       });
+
+      const response = {
+        userId: userId,
+        status: newAttendance.status
+      }
 
       return res.status(200).json(newAttendance);
     } catch (error) {
@@ -541,7 +545,13 @@ router.post( //Add an Image to a Event based on the Event's id
         preview,
       });
 
-      return res.status(200).json(image);
+      const responseImage = {
+        id: image.id,
+        url: image.url,
+        preview: image.preview,
+      };
+
+      return res.status(200).json(responseImage);
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -607,8 +617,20 @@ router.put( //Edit an Event specified by its id
         endDate: req.body.endDate,
       });
 
+      const response = {
+        id: event.id,
+        venueId: event.venueId,
+        name:event.name,
+        type:event.type,
+        capacity: event.capacity,
+        price:event.price,
+        description:event.description,
+        startDate:event.startDate,
+        endDate:event.endDate,
+      }
+
       // Return the updated event
-      return res.status(200).json(event);
+      return res.status(200).json(response);
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });

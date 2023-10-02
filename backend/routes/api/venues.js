@@ -7,7 +7,7 @@ const { setTokenCookie, restoreUser, requireAuth } = require('../../utils/auth')
 const { User, Group, Membership, Image, Venue } = require('../../db/models');
 
 const router = express.Router();
-const validateVenueUpdate = [
+const validateVenue = [
   check('address')
     .notEmpty()
     .withMessage('Street address is required'),
@@ -18,20 +18,36 @@ const validateVenueUpdate = [
     .notEmpty()
     .withMessage('State is required'),
   check('lat')
-    .isNumeric()
     .isFloat()
     .withMessage('Latitude is not valid'),
   check('lng')
-    .isNumeric()
     .isFloat()
     .withMessage('Longitude is not valid'),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const validationErrors = {};
+      errors.array().forEach(error => {
+        validationErrors[error.param] = error.msg;
+      });
+
+      return res.status(400).json({
+        message: 'Bad Request',
+        errors: validationErrors
+      });
+    }
+
+    next();
+  }
 ];
 
 //Edit a Venue specified by its id
 router.put(
   '/:venueId',
   requireAuth,
-  validateVenueUpdate,
+  validateVenue,
   async (req, res) => {
     try {
       const { venueId } = req.params;
@@ -52,10 +68,25 @@ router.put(
       if (!venue) {
         return res.status(404).json({ message: 'Venue couldn\'t be found' });
       }
+      venue.address = req.body.address;
+      venue.city = req.body.city;
+      venue.state = req.body.state;
+      venue.lat = req.body.lat;
+      venue.lng = req.body.lng;
 
       await venue.save();
 
-      return res.status(200).json(venue);
+      const response = {
+        id: venue.id,
+        groupId: venue.groupId,
+        address: venue.address,
+        city: venue.city,
+        state: venue.state,
+        lat: venue.lat,
+        lng: venue.lng,
+      };
+
+      return res.status(200).json(response);
     } catch (error) {
       console.error('Error:', error); // Log any caught errors
       return res.status(500).json({ error: 'Internal server error' });

@@ -31,38 +31,6 @@ const validateGroup = [
     .withMessage('State is required'),
 ];
 
-// Validation middleware for the request body on updates
-const validateGroupUpdate = [
-  check('name')
-    .optional()
-    .isLength({ max: 60 })
-    .notEmpty()
-    .withMessage('Name must be 60 characters or less'),
-  check('about')
-    .optional()
-    .isLength({ min: 50 })
-    .notEmpty()
-    .withMessage('About must be 50 characters or more'),
-  check('type')
-    .optional()
-    .isIn(['Online', 'In person'])
-    .notEmpty()
-    .withMessage("Type must be 'Online' or 'In person'"),
-  check('private')
-    .optional()
-    .isBoolean()
-    .notEmpty()
-    .withMessage('Private must be a boolean'),
-  check('city')
-    .optional()
-    .notEmpty()
-    .withMessage('City is required'),
-  check('state')
-    .optional()
-    .notEmpty()
-    .withMessage('State is required'),
-];
-
 const validateImageUrl = [
   check('url')
     .isURL()
@@ -104,6 +72,42 @@ const validateEvent = [
 
     return true;
   }),
+];
+
+const validateVenue = [
+  check('address')
+    .notEmpty()
+    .withMessage('Street address is required'),
+  check('city')
+    .notEmpty()
+    .withMessage('City is required'),
+  check('state')
+    .notEmpty()
+    .withMessage('State is required'),
+  check('lat')
+    .isFloat()
+    .withMessage('Latitude is not valid'),
+  check('lng')
+    .isFloat()
+    .withMessage('Longitude is not valid'),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const validationErrors = {};
+      errors.array().forEach(error => {
+        validationErrors[error.param] = error.msg;
+      });
+
+      return res.status(400).json({
+        message: 'Bad Request',
+        errors: validationErrors
+      });
+    }
+
+    next();
+  }
 ];
 
 // Get all Groups
@@ -243,23 +247,23 @@ router.get(
             ],
           })
           // Calculate numMembers inside the loop
-            const numMembers = await Membership.count({ where: { groupId: getMemGroup.id } });
-            const newGroup = {
-              id: getMemGroup.id,
-              organizerId: getMemGroup.organizerId,
-              name: getMemGroup.name,
-              about: getMemGroup.about,
-              type: getMemGroup.type,
-              private: getMemGroup.private,
-              city: getMemGroup.city,
-              state: getMemGroup.state,
-              createdAt: getMemGroup.createdAt,
-              updatedAt: getMemGroup.updatedAt,
-              numMembers: numMembers,
-              previewImage: getMemGroup.Images.length > 0 ? getMemGroup.Images[0].url : null,
-            }
-            totalGroups.push(newGroup)
+          const numMembers = await Membership.count({ where: { groupId: getMemGroup.id } });
+          const newGroup = {
+            id: getMemGroup.id,
+            organizerId: getMemGroup.organizerId,
+            name: getMemGroup.name,
+            about: getMemGroup.about,
+            type: getMemGroup.type,
+            private: getMemGroup.private,
+            city: getMemGroup.city,
+            state: getMemGroup.state,
+            createdAt: getMemGroup.createdAt,
+            updatedAt: getMemGroup.updatedAt,
+            numMembers: numMembers,
+            previewImage: getMemGroup.Images.length > 0 ? getMemGroup.Images[0].url : null,
           }
+          totalGroups.push(newGroup)
+        }
       }
       res.status(200).json({ Groups: totalGroups });
     } catch (error) {
@@ -299,6 +303,23 @@ router.get( //Get details of a Group from an id
       //Calculate numMembers
       const numMembers = await Membership.count({ where: { groupId: group.id } });
 
+      // Omit unwanted fields from the response objects
+      const groupImages = group.Images.map((image) => ({
+        id: image.id,
+        url: image.url,
+        preview: image.preview,
+      }));
+
+      const venues = group.Venues.map((venue) => ({
+        id: venue.id,
+        groupId: venue.groupId,
+        address: venue.address,
+        city: venue.city,
+        state: venue.state,
+        lat: venue.lat,
+        lng: venue.lng,
+      }));
+
       const response = {
         id: group.id,
         organizerId: group.organizerId,
@@ -308,12 +329,10 @@ router.get( //Get details of a Group from an id
         private: group.private,
         city: group.city,
         state: group.state,
-        createdAt: group.createdAt,
-        updatedAt: group.updatedAt,
         numMembers: numMembers,
-        GroupImages: group.Images,
+        GroupImages: groupImages,
         Organizer: group.User,
-        Venues: group.Venues,
+        Venues: venues,
       };
 
       return res.status(200).json(response);
@@ -511,7 +530,20 @@ router.post(
         endDate: req.body.endDate,
       });
 
-      return res.status(200).json(event);
+      const response = {
+        id: event.id,
+        groupId: groupId,
+        venueId: event.venueId,
+        name:event.name,
+        type:event.type,
+        capacity: event.capacity,
+        price:event.price,
+        description:event.description,
+        startDate:event.startDate,
+        endDate:event.endDate,
+      }
+
+      return res.status(200).json(response);
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -549,7 +581,14 @@ router.post( //Add an Image to a Group based on the Group's id
         imageableId: groupId,
       });
 
-      return res.status(200).json(image);
+      // Omit unwanted fields from the response
+      const responseImage = {
+        id: image.id,
+        url: image.url,
+        preview: image.preview,
+      };
+
+      return res.status(200).json(responseImage);
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -720,7 +759,14 @@ router.put( //Change the status of a membership for a group specified by id
           membership.status = 'member';
           await membership.save();
 
-          return res.status(200).json(membership);
+          const response = {
+            id: req.user.id,
+            groupId:group.id ,
+            memberId:memberId ,
+            status:membership.status
+          }
+
+          return res.status(200).json(response);
         } else {
           return res.status(403).json({ message: 'Unauthorized' });
         }
@@ -862,6 +908,7 @@ router.get( //Get All Venues for a Group specified by its id
 router.post( //Create a new Venue for a Group specified by its id
   '/:groupId/venues',
   requireAuth,
+  validateVenue,
   async (req, res) => {
     const { groupId } = req.params;
     const { address, city, state, lat, lng } = req.body;
@@ -908,7 +955,17 @@ router.post( //Create a new Venue for a Group specified by its id
         lng,
       });
 
-      return res.status(200).json(newVenue);
+      const response = {
+        id: newVenue.id,
+        groupId: newVenue.groupId,
+        address: newVenue.address,
+        city: newVenue.city,
+        state: newVenue.state,
+        lat: newVenue.lat,
+        lng: newVenue.lng,
+      };
+
+      return res.status(200).json(response);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error: 'Internal server error' });
