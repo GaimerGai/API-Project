@@ -22,7 +22,7 @@ const validateEvent = [
     .isLength({ min: 5 })
     .withMessage('Name must be at least 5 characters'),
   check('type')
-    .isIn(['Online', 'In Person'])
+    .isIn(['Online', 'In person', 'In Person'])
     .withMessage('Type must be Online or In person'),
   check('capacity').isInt().withMessage('Capacity must be an integer'),
   check('price').isFloat().withMessage('Price is invalid'),
@@ -62,7 +62,11 @@ router.get( //Get All Events with Query Filters
         errors.size = 'Size must be greater than or equal to 1';
       }
 
-      if (type && !['Online', 'In Person'].includes(type)) {
+      if (name && typeof name !== 'string') {
+        errors.name = 'Name must be a string';
+      }
+
+      if (type && !['Online', 'In Person', 'In person', 'in person'].includes(type)) {
         errors.type = "Type must be 'Online' or 'In Person'";
       }
 
