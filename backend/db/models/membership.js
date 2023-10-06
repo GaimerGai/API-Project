@@ -31,10 +31,10 @@ module.exports = (sequelize, DataTypes) => {
     status:{
       type:DataTypes.STRING,
       allowNull:false,
-      validate:{
-        isAlpha: true,
-        notEmpty:true,
-      }
+      // validate:{
+      //   isAlpha: true,
+      //   notEmpty:true,
+      // }
     },
   }, {
     sequelize,

@@ -50,6 +50,10 @@ router.get( //Get All Events with Query Filters
   async (req, res) => {
     const { page = 1, size = 20, name, type, startDate } = req.query;
 
+    const cleanedName = name ? name.replace(/"/g, '') : null;
+    const cleanedType = type ? type.replace(/"/g, '') : null;
+    const cleanedStartDate = startDate ? startDate.replace(/"/g, '') : null
+
     try {
       // Validate query parameters
       const errors = {};
@@ -158,7 +162,7 @@ router.get( //Get All Events with Query Filters
     }
   });
 
-  //Get details of an Event specified by its id
+//Get details of an Event specified by its id
 router.get(
   '/:eventId',
   async (req, res) => {
@@ -223,7 +227,7 @@ router.get(
           state: event.Venue.state,
           lat: event.Venue.lat,
           lng: event.Venue.lng,
-        }: null, // Set Venue to null if it's null in the database
+        } : null, // Set Venue to null if it's null in the database
         EventImages: event.Images.length > 0 ? event.Images : null, // Set Image to null if it's null in the database
       };
 
@@ -352,11 +356,18 @@ router.post( //Request to Attend an Event based on the Event's id
         }
       }
 
+
+
       // Check if the user is a member of the group associated with the event
-      const isMember = await Membership.findOne({
+      const group = await Group.findByPk(event.groupId);
+      const isMember = userId === group.organizerId ||
+      await Membership.findOne({
         where: {
           groupId: event.groupId,
           memberId: userId,
+          status:{
+            [Op.or]: ['member','co-host']
+          }
         },
       });
 
@@ -367,6 +378,7 @@ router.post( //Request to Attend an Event based on the Event's id
       // Create a new attendance request
       const newAttendance = await Attendee.create({
         userId,
+        eventId,
         status: 'pending',
       });
 
@@ -375,7 +387,7 @@ router.post( //Request to Attend an Event based on the Event's id
         status: newAttendance.status
       }
 
-      return res.status(200).json(newAttendance);
+      return res.status(200).json(response);
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -389,8 +401,8 @@ router.put( //Change the status of an attendance for an event specified by id
     const eventId = req.params.eventId;
     const loggedInUserId = req.user.id;
     const { userId, status } = req.body;
-    console.log("This is the status:--------------",status)
-    console.log("This is the userID:--------------",userId)
+    console.log("This is the status:--------------", status)
+    console.log("This is the userID:--------------", userId)
 
     try {
       // Log eventId and userId for debugging purposes
@@ -409,7 +421,10 @@ router.put( //Change the status of an attendance for an event specified by id
 
       // Check if the attendance exists
       const attendee = await Attendee.findOne({
-        where: { eventId, userId },
+        where: {
+          eventId,
+          userId
+        },
       });
       console.log('Attendee found:', attendee);
 
@@ -431,9 +446,6 @@ router.put( //Change the status of an attendance for an event specified by id
         },
       });
 
-      console.log("are you the organizer: ----------------------------------------", isOrganizer)
-      console.log("are you a cohost or member: -------------------------------------------", isCoHost)
-      const group = await Group.findByPk(event.groupId);
       if (!isOrganizer && !isCoHost) {
         return res.status(403).json({ message: 'Forbidden. You do not have permission to edit the attendance status' });
       }
@@ -483,15 +495,17 @@ router.delete( //Delete attendance to an event specified by id
         },
       });
 
-      // Check if the user is authorized to delete the attendance
-      const getGroup = await Group.findByPk(event.groupId);
-      if (req.user.id !== attendance.userId && req.user.id !== getGroup.organizerId) {
-        return res.status(403).json({ message: "Only the User or organizer may delete an Attendance" });
-      }
-
       if (!attendance) {
         return res.status(404).json({ message: "Attendance does not exist for this User" });
       }
+
+      // Check if the user is authorized to delete the attendance
+      const group = await Group.findByPk(event.groupId);
+
+      if (userId !== attendance?.userId || userId !== group.organizerId) {
+        return res.status(403).json({ message: "Only the User or organizer may delete an Attendance" });
+      }
+
 
       // Delete the attendance
       await attendance.destroy();
@@ -528,13 +542,18 @@ router.post( //Add an Image to a Event based on the Event's id
       // Check if the current user is the organizer of the group or a co-host
       const isAuthorized =
         req.user.id === group.organizerId ||
-        (await Attendee.findOne({
+        (await Membership.findOne({
           where: {
-            eventId,
-            userId: req.user.id,
+            groupId: group.id,
+            memberId: req.user.id,
             status: 'co-host', // Modify this to allow 'co-host' status
           },
-        }));
+        })) ||
+        await Attendee.findOne({
+          where:{
+            userId: req.user.id
+          }
+        });
 
       if (!isAuthorized) {
         return res.status(403).json({ message: 'Unauthorized' });
@@ -597,10 +616,10 @@ router.put( //Edit an Event specified by its id
       // Check if the current user is the organizer of the group or a co-host
       const isAuthorized =
         req.user.id === group.organizerId ||
-        (await Attendee.findOne({
+        (await Membership.findOne({
           where: {
-            eventId,
-            userId: req.user.id,
+            groupId: group.id,
+            memberId: req.user.id,
             status: 'co-host',
           },
         }));
@@ -624,13 +643,13 @@ router.put( //Edit an Event specified by its id
       const response = {
         id: event.id,
         venueId: event.venueId,
-        name:event.name,
-        type:event.type,
+        name: event.name,
+        type: event.type,
         capacity: event.capacity,
-        price:event.price,
-        description:event.description,
-        startDate:event.startDate,
-        endDate:event.endDate,
+        price: event.price,
+        description: event.description,
+        startDate: event.startDate,
+        endDate: event.endDate,
       }
 
       // Return the updated event
@@ -666,10 +685,10 @@ router.delete( //Delete an Event specified by its id
       // Check if the current user is the organizer of the group or a co-host
       const isAuthorized =
         req.user.id === group.organizerId ||
-        (await Attendee.findOne({
+        (await Membership.findOne({
           where: {
-            eventId,
-            userId: req.user.id,
+            groupId: group.id,
+            memberId: req.user.id,
             status: 'co-host',
           },
         }));

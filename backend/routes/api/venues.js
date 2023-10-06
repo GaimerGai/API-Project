@@ -49,18 +49,19 @@ router.put(
   requireAuth,
   validateVenue,
   async (req, res) => {
-    try {
-      const { venueId } = req.params;
-      const errors = validationResult(req);
+    const { venueId } = req.params;
+    const userId = req.user.id;
+    const errors = validationResult(req);
 
-      if (!errors.isEmpty()) {
-        const errorResponse = {};
-        errors.array().forEach((error) => {
-          errorResponse[error.param] = error.msg;
-        });
-        console.log('Validation errors:', errorResponse); // Log validation errors
-        return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
-      }
+    if (!errors.isEmpty()) {
+      const errorResponse = {};
+      errors.array().forEach((error) => {
+        errorResponse[error.param] = error.msg;
+      });
+      console.log('Validation errors:', errorResponse); // Log validation errors
+      return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
+    }
+    try {
 
       const venue = await Venue.findByPk(venueId);
 
@@ -68,6 +69,26 @@ router.put(
       if (!venue) {
         return res.status(404).json({ message: 'Venue couldn\'t be found' });
       }
+
+      const findTheGroup = venue.groupId;
+
+      const group = await Group.findByPk(findTheGroup)
+
+      const isAuthorized =
+        userId === group.organizerId ||
+        // userId ===
+        (await Membership.findOne({
+          where: {
+            groupId: group.id,
+            memberId: req.user.id,
+            status: 'co-host',
+          },
+        }));
+
+      if (!isAuthorized) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
       venue.address = req.body.address;
       venue.city = req.body.city;
       venue.state = req.body.state;

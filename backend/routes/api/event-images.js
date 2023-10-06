@@ -21,14 +21,16 @@ router.delete('/:imageId',
         id:imageId,
         imageableType: 'Event',
       }});
-      console.log("This is the Image:--------------------------",image)
 
       if (!image) {
         return res.status(404).json({ message: 'Event Image couldn\'t be found' });
       }
 
       // Find the associated Event
-      const group = await Group.findByPk(image.imageableId);
+      const event = await Event.findByPk(image.imageableId);
+
+
+      const group = await Group.findByPk(event.groupId);
 
       // Check if the user is authorized (organizer or co-host of the group)
       const isAuthorized =

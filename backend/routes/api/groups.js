@@ -51,7 +51,7 @@ const validateEvent = [
     .isLength({ min: 5 })
     .withMessage('Name must be at least 5 characters'),
   check('type')
-    .isIn(['Online', 'In Person'])
+    .isIn(['Online', 'In person'])
     .withMessage('Type must be Online or In person'),
   check('capacity').isInt().withMessage('Capacity must be an integer'),
   check('price').isFloat().withMessage('Price is invalid'),
@@ -505,15 +505,15 @@ router.post(
 
       // Check if the user is authorized to create an event
       const isOrganizer = group.organizerId === req.user.id;
-      const isCoHostOrMember = await Membership.findOne({
+      const isCoHost = await Membership.findOne({
         where: {
           memberId: req.user.id,
           groupId: group.id,
-          [Op.or]: [{ status: 'co-host' }, { status: 'member' }],
+          status: 'co-host',
         },
       });
 
-      if (!isOrganizer && !isCoHostOrMember) {
+      if (!isOrganizer && !isCoHost) {
         return res.status(403).json({ message: 'Unauthorized' });
       }
 
@@ -611,7 +611,14 @@ router.get( //Get all Members of a Group specified by its id
       }
 
       // Check if the current user is the organizer or a co-host
-      const isOrganizerOrCoHost = group.organizerId === req.user.id;
+      const isOrganizer = group.organizerId === req.user.id;
+      const isCoHost = await Membership.findOne({
+        where: {
+          memberId: req.user.id,
+          groupId: group.id,
+          status: 'co-host',
+        },
+      });
 
       // Fetch group members along with their statuses
       const members = await User.findAll({
@@ -625,26 +632,42 @@ router.get( //Get all Members of a Group specified by its id
         attributes: ['id', 'firstName', 'lastName'],
       });
 
-      let filteredMembers = members.map((member) => {
-        const { id, firstName, lastName } = member;
-        const membershipStatus = member.Groups[0].Membership.status;
+      
+      if (isOrganizer || isCoHost){
+        let filteredMembers = members.map((member) => {
+          const { id, firstName, lastName } = member;
+          const membershipStatus = member.Groups[0].Membership.status;
 
-        return {
-          id,
-          firstName,
-          lastName,
-          Membership: {
-            status: membershipStatus,
-          },
-        };
-      });
-
-      // Filter out members with a status of "pending" if the user is not the organizer or co-host
-      if (!isOrganizerOrCoHost) {
-        filteredMembers = filteredMembers.filter((member) => member.Membership.status !== 'pending');
+          return {
+            id,
+            firstName,
+            lastName,
+            Membership: {
+              status: membershipStatus,
+            },
+          };
+        });
+        return res.status(200).json({ Members: filteredMembers });
       }
 
-      return res.status(200).json({ Members: filteredMembers });
+      // Filter out members with a status of "pending" if the user is not the organizer or co-host
+      if (!isOrganizer || !isCoHost) {
+        let filteredMembers = members.map((member) => {
+          const { id, firstName, lastName } = member;
+          const membershipStatus = member.Groups[0].Membership.status;
+
+          return {
+            id,
+            firstName,
+            lastName,
+            Membership: {
+              status: membershipStatus,
+            },
+          };
+        });
+        filteredMembers = filteredMembers.filter((member) => member.Membership.status !== 'pending');
+        return res.status(200).json({ Members: filteredMembers });
+      }
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -659,7 +682,7 @@ router.post( //Request a Membership for a Group based on the Group's id
   requireAuth,
   async (req, res) => {
     const groupId = req.params.groupId;
-    const memberId = req.user.id;
+    const userId = req.user.id;
 
     try {
       // Check if the group exists
@@ -673,7 +696,7 @@ router.post( //Request a Membership for a Group based on the Group's id
       const existingMembershipRequest = await Membership.findOne({
         where: {
           groupId,
-          memberId,
+          memberId: userId,
           status: 'pending',
         },
       });
@@ -686,8 +709,7 @@ router.post( //Request a Membership for a Group based on the Group's id
       const existingMembership = await Membership.findOne({
         where: {
           groupId,
-          memberId,
-          status: 'accepted',
+          memberId: userId,
         },
       });
 
@@ -698,7 +720,7 @@ router.post( //Request a Membership for a Group based on the Group's id
       // Create a new membership request for the group
       const newMembershipRequest = await Membership.create({
         groupId,
-        memberId,
+        memberId: userId,
         status: 'pending',
       });
 
@@ -756,7 +778,7 @@ router.put( //Change the status of a membership for a group specified by id
             });
           }
 
-          membership.status = 'member';
+          membership.status = status;
           await membership.save();
 
           const response = {
@@ -782,7 +804,7 @@ router.put( //Change the status of a membership for a group specified by id
             });
           }
 
-          membership.status = 'co-host';
+          membership.status = status;
           await membership.save();
 
           return res.status(200).json(membership);
@@ -878,17 +900,15 @@ router.get( //Get All Venues for a Group specified by its id
       const isOrganizer = group.organizerId === req.user.id;
 
       // Check if the user is a co-host or member of the group
-      const membership = await Membership.findOne({
+      const isCoHost = await Membership.findOne({
         where: {
           groupId,
           memberId: req.user.id,
-          status: {
-            [Op.or]: ['co-host', 'member'],
-          },
+          status: 'co-host',
         },
       });
 
-      if (!isOrganizer && !membership) {
+      if (!isOrganizer && !isCoHost) {
         return res.status(403).json({ message: 'Unauthorized' });
       }
 
@@ -932,17 +952,15 @@ router.post( //Create a new Venue for a Group specified by its id
       const isOrganizer = group.organizerId === req.user.id;
 
       // Check if the user is a co-host or member of the group
-      const membership = await Membership.findOne({
+      const isCoHost = await Membership.findOne({
         where: {
           groupId,
           memberId: req.user.id,
-          status: {
-            [Op.or]: ['co-host', 'member'],
-          },
+          status: 'co-host',
         },
       });
 
-      if (!isOrganizer && !membership) {
+      if (!isOrganizer && !isCoHost) {
         return res.status(403).json({ message: 'Unauthorized' });
       }
 
