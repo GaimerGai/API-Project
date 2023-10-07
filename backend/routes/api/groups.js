@@ -173,7 +173,6 @@ router.post(
       });
       return res.status(201).json(newGroup);
     } catch (error) {
-      console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -867,7 +866,7 @@ router.delete( // Delete membership to a group specified by id
           errors: { memberId: 'User couldn\'t be found' },
         });
       }
-      
+
       // Check if the user is authorized to delete the membership
       const isHost = group.organizerId === req.user.id;
       const isCurrentUser = memberId == req.user.id;
