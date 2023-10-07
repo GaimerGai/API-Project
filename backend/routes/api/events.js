@@ -43,6 +43,7 @@ const validateEvent = [
 
     return true;
   }),
+  handleValidationErrors
 ];
 
 router.get( //Get All Events with Query Filters
@@ -496,21 +497,24 @@ router.delete( //Delete attendance to an event specified by id
       });
 
       if (!attendance) {
-        return res.status(404).json({ message: "Attendance does not exist for this User" });
+        return res.status(403).json({ message: "Forbidden" });
       }
 
       // Check if the user is authorized to delete the attendance
       const group = await Group.findByPk(event.groupId);
 
-      if (userId !== attendance?.userId || userId !== group.organizerId) {
+      if (userId === attendance.userId){
+        await attendance.destroy();
+        return res.status(200).json({ message: "Successfully deleted attendance from event" });
+      }
+      if(userId === group.organizerId) {
+        // Delete the attendance
+        await attendance.destroy();
+        return res.status(200).json({ message: "Successfully deleted attendance from event" });
+      }
+      else{
         return res.status(403).json({ message: "Only the User or organizer may delete an Attendance" });
       }
-
-
-      // Delete the attendance
-      await attendance.destroy();
-
-      return res.status(200).json({ message: "Successfully deleted attendance from event" });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -546,12 +550,13 @@ router.post( //Add an Image to a Event based on the Event's id
           where: {
             groupId: group.id,
             memberId: req.user.id,
-            status: 'co-host', // Modify this to allow 'co-host' status
+            status: 'co-host',
           },
         })) ||
         await Attendee.findOne({
           where:{
-            userId: req.user.id
+            userId: req.user.id,
+            eventId: event.id
           }
         });
 
@@ -588,15 +593,15 @@ router.put( //Edit an Event specified by its id
   validateEvent, // Middleware for event validation
   async (req, res) => {
     const eventId = req.params.eventId;
-    const errors = validationResult(req);
+    // const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-      const errorResponse = {};
-      errors.array().forEach((error) => {
-        errorResponse[error.param] = error.msg;
-      });
-      return res.status(400).json({ errors: errorResponse });
-    }
+    // if (!errors.isEmpty()) {
+    //   const errorResponse = {};
+    //   errors.array().forEach((error) => {
+    //     errorResponse[error.param] = error.msg;
+    //   });
+    //   return res.status(400).json({ errors: errorResponse });
+    // }
 
     try {
       // Check if the event exists
@@ -642,6 +647,7 @@ router.put( //Edit an Event specified by its id
 
       const response = {
         id: event.id,
+        groupId:event.groupId,
         venueId: event.venueId,
         name: event.name,
         type: event.type,

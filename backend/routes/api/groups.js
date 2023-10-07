@@ -29,12 +29,14 @@ const validateGroup = [
   check('state')
     .notEmpty()
     .withMessage('State is required'),
+    handleValidationErrors
 ];
 
 const validateImageUrl = [
   check('url')
     .isURL()
     .withMessage('Please provide a valid image URL'),
+    handleValidationErrors
 ];
 
 const validateEvent = [
@@ -72,6 +74,7 @@ const validateEvent = [
 
     return true;
   }),
+  handleValidationErrors
 ];
 
 const validateVenue = [
@@ -91,23 +94,24 @@ const validateVenue = [
     .isFloat()
     .withMessage('Longitude is not valid'),
 
-  (req, res, next) => {
-    const errors = validationResult(req);
+  // (req, res, next) => {
+  //   const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-      const validationErrors = {};
-      errors.array().forEach(error => {
-        validationErrors[error.param] = error.msg;
-      });
+  //   if (!errors.isEmpty()) {
+  //     const validationErrors = {};
+  //     errors.array().forEach(error => {
+  //       validationErrors[error.param] = error.msg;
+  //     });
 
-      return res.status(400).json({
-        message: 'Bad Request',
-        errors: validationErrors
-      });
-    }
+  //     return res.status(400).json({
+  //       message: 'Bad Request',
+  //       errors: validationErrors
+  //     });
+  //   }
 
-    next();
-  }
+  //   next();
+  // },
+  handleValidationErrors
 ];
 
 // Get all Groups
@@ -153,14 +157,14 @@ router.post(
   requireAuth,
   validateGroup,
   async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const errorResponse = {};
-      errors.array().forEach((error) => {
-        errorResponse[error.param] = error.msg;
-      });
-      return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
-    }
+    // const errors = validationResult(req);
+    // if (!errors.isEmpty()) {
+    //   const errorResponse = {};
+    //   errors.array().forEach((error) => {
+    //     errorResponse[error.param] = error.msg;
+    //   });
+    //   return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
+    // }
 
     try {
       const newGroup = await Group.create({
@@ -329,6 +333,8 @@ router.get( //Get details of a Group from an id
         private: group.private,
         city: group.city,
         state: group.state,
+        createdAt:group.createdAt,
+        updatedAt:group.updatedAt,
         numMembers: numMembers,
         GroupImages: groupImages,
         Organizer: group.User,
@@ -349,15 +355,15 @@ router.put( //Edit a Group
   validateGroup,
   async (req, res) => {
     const { groupId } = req.params;
-    const errors = validationResult(req);
+    // const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-      const errorResponse = {};
-      errors.array().forEach((error) => {
-        errorResponse[error.param] = error.msg;
-      });
-      return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
-    }
+    // if (!errors.isEmpty()) {
+    //   const errorResponse = {};
+    //   errors.array().forEach((error) => {
+    //     errorResponse[error.param] = error.msg;
+    //   });
+    //   return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
+    // }
 
     try {
       //Check if the group exists
@@ -484,16 +490,16 @@ router.post(
   validateEvent,
   async (req, res) => {
     const { groupId } = req.params;
-    const errors = validationResult(req);
+    // const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-      const errorResponse = {};
-      errors.array().forEach((error) => {
-        errorResponse[error.param] = error.msg;
-      });
+    // if (!errors.isEmpty()) {
+    //   const errorResponse = {};
+    //   errors.array().forEach((error) => {
+    //     errorResponse[error.param] = error.msg;
+    //   });
 
-      return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
-    }
+    //   return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
+    // }
 
     try {
       // Check if Group exists
@@ -632,7 +638,7 @@ router.get( //Get all Members of a Group specified by its id
         attributes: ['id', 'firstName', 'lastName'],
       });
 
-      
+
       if (isOrganizer || isCoHost){
         let filteredMembers = members.map((member) => {
           const { id, firstName, lastName } = member;
@@ -806,8 +812,14 @@ router.put( //Change the status of a membership for a group specified by id
 
           membership.status = status;
           await membership.save();
+          const response = {
+            id: req.user.id,
+            groupId:group.id ,
+            memberId:memberId ,
+            status:membership.status
+          }
 
-          return res.status(200).json(membership);
+          return res.status(200).json(response);
         } else {
           return res.status(403).json({ message: 'Unauthorized' });
         }
@@ -846,14 +858,6 @@ router.delete( // Delete membership to a group specified by id
         return res.status(404).json({ message: 'Group couldn\'t be found' });
       }
 
-      // Check if the user is authorized to delete the membership
-      const isHost = group.organizerId === req.user.id;
-      const isCurrentUser = memberId == req.user.id;
-
-      if (!isHost && !isCurrentUser) {
-        return res.status(403).json({ message: 'Unauthorized' });
-      }
-
       // Check if the user whose membership is being deleted exists
       const user = await User.findByPk(req.user.id);
 
@@ -863,6 +867,15 @@ router.delete( // Delete membership to a group specified by id
           errors: { memberId: 'User couldn\'t be found' },
         });
       }
+      
+      // Check if the user is authorized to delete the membership
+      const isHost = group.organizerId === req.user.id;
+      const isCurrentUser = memberId == req.user.id;
+
+      if (!isHost && !isCurrentUser) {
+        return res.status(403).json({ message: 'Unauthorized' });
+      }
+
 
       // Check if the membership exists
       const membership = await Membership.findOne({
@@ -932,15 +945,15 @@ router.post( //Create a new Venue for a Group specified by its id
   async (req, res) => {
     const { groupId } = req.params;
     const { address, city, state, lat, lng } = req.body;
-    const errors = validationResult(req);
+    // const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-      const errorResponse = {};
-      errors.array().forEach((error) => {
-        errorResponse[error.param] = error.msg;
-      });
-      return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
-    }
+    // if (!errors.isEmpty()) {
+    //   const errorResponse = {};
+    //   errors.array().forEach((error) => {
+    //     errorResponse[error.param] = error.msg;
+    //   });
+    //   return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
+    // }
 
     try {
       const group = await Group.findByPk(groupId);

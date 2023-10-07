@@ -40,7 +40,8 @@ const validateVenue = [
     }
 
     next();
-  }
+  },
+  handleValidationErrors
 ];
 
 //Edit a Venue specified by its id
@@ -51,16 +52,16 @@ router.put(
   async (req, res) => {
     const { venueId } = req.params;
     const userId = req.user.id;
-    const errors = validationResult(req);
+    // const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-      const errorResponse = {};
-      errors.array().forEach((error) => {
-        errorResponse[error.param] = error.msg;
-      });
-      console.log('Validation errors:', errorResponse); // Log validation errors
-      return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
-    }
+    // if (!errors.isEmpty()) {
+    //   const errorResponse = {};
+    //   errors.array().forEach((error) => {
+    //     errorResponse[error.param] = error.msg;
+    //   });
+    //   console.log('Validation errors:', errorResponse); // Log validation errors
+    //   return res.status(400).json({ message: 'Bad Request', errors: errorResponse });
+    // }
     try {
 
       const venue = await Venue.findByPk(venueId);
