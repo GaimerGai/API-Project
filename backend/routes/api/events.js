@@ -556,7 +556,10 @@ router.post( //Add an Image to a Event based on the Event's id
         await Attendee.findOne({
           where:{
             userId: req.user.id,
-            eventId: event.id
+            eventId: event.id,
+            status: {
+              [Op.ne]: 'pending',
+            }
           }
         });
 
