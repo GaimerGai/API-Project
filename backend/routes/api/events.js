@@ -497,7 +497,7 @@ router.delete( //Delete attendance to an event specified by id
       });
 
       if (!attendance) {
-        return res.status(403).json({ message: "Forbidden" });
+        return res.status(404).json({ message: "Attendance does not exist for this User" });
       }
 
       // Check if the user is authorized to delete the attendance

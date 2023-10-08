@@ -66,7 +66,6 @@ const validateEvent = [
     if (new Date(startDate) < currentDate) {
       throw new Error('Start date must be in the future');
     }
-
     // Check if the end date is less than the start date
     if (new Date(endDate) < new Date(startDate)) {
       throw new Error('End date must be greater than the start date');
@@ -74,8 +73,40 @@ const validateEvent = [
 
     return true;
   }),
+  check('endDate').custom((endDate, { req }) => {
+    const { startDate } = req.body;
+    const currentDate = new Date();
+
+    // Check if the end date is in the past
+    if (new Date(endDate) < currentDate) {
+      throw new Error('End date must be in the future');
+    }
+    // Check if the end date is less than the start date
+    if (new Date(endDate) < new Date(startDate)) {
+      throw new Error('End date is less than the start date');
+    }
+
+    return true;
+  }),
   handleValidationErrors
 ];
+
+// Custom validator function to check if latitude is valid
+const isLatitude = (value) => {
+  if (isNaN(value) || value < -90 || value > 90) {
+    throw new Error('Latitude is not valid');
+  }
+  return true;
+};
+
+// Custom validator function to check if longitude is valid
+const isLongitude = (value) => {
+  if (isNaN(value) || value < -180 || value > 180) {
+    throw new Error('Longitude is not valid');
+  }
+  return true;
+};
+
 
 const validateVenue = [
   check('address')
@@ -88,10 +119,14 @@ const validateVenue = [
     .notEmpty()
     .withMessage('State is required'),
   check('lat')
+    .notEmpty()
     .isFloat()
+    .custom(isLatitude)
     .withMessage('Latitude is not valid'),
   check('lng')
+    .notEmpty()
     .isFloat()
+    .custom(isLongitude)
     .withMessage('Longitude is not valid'),
 
   // (req, res, next) => {
@@ -764,6 +799,15 @@ router.put( //Change the status of a membership for a group specified by id
         },
       });
 
+      //Couldn't find a User with the specified memberId
+      const user = await User.findByPk(memberId);
+      if (!user) {
+        return res.status(400).json({
+          message: 'Validation Error',
+          errors: { memberId: 'User couldn\'t be found' },
+        });
+      }
+
       if (status === 'pending') {
         return res.status(400).json({
           message: 'Validations Error',
@@ -850,6 +894,15 @@ router.delete( // Delete membership to a group specified by id
     }
 
     try {
+      // Check if the user whose membership is being deleted exists
+      const user = await User.findByPk(memberId);
+      if (!user) {
+        return res.status(400).json({
+          message: 'Validation Error',
+          errors: { memberId: 'User couldn\'t be found' },
+        });
+      }
+      
       // Check if the group exists
       const group = await Group.findByPk(groupId);
 
@@ -857,15 +910,6 @@ router.delete( // Delete membership to a group specified by id
         return res.status(404).json({ message: 'Group couldn\'t be found' });
       }
 
-      // Check if the user whose membership is being deleted exists
-      const user = await User.findByPk(req.user.id);
-
-      if (!user) {
-        return res.status(400).json({
-          message: 'Validation Error',
-          errors: { memberId: 'User couldn\'t be found' },
-        });
-      }
 
       // Check if the user is authorized to delete the membership
       const isHost = group.organizerId === req.user.id;

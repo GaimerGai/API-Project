@@ -7,6 +7,22 @@ const { setTokenCookie, restoreUser, requireAuth } = require('../../utils/auth')
 const { User, Group, Membership, Image, Venue } = require('../../db/models');
 
 const router = express.Router();
+
+const isLatitude = (value) => {
+  if (isNaN(value) || value < -90 || value > 90) {
+    throw new Error('Latitude is not valid');
+  }
+  return true;
+};
+
+// Custom validator function to check if longitude is valid
+const isLongitude = (value) => {
+  if (isNaN(value) || value < -180 || value > 180) {
+    throw new Error('Longitude is not valid');
+  }
+  return true;
+};
+
 const validateVenue = [
   check('address')
     .notEmpty()
@@ -18,29 +34,15 @@ const validateVenue = [
     .notEmpty()
     .withMessage('State is required'),
   check('lat')
+    .notEmpty()
     .isFloat()
+    .custom(isLatitude)
     .withMessage('Latitude is not valid'),
   check('lng')
+    .notEmpty()
     .isFloat()
+    .custom(isLongitude)
     .withMessage('Longitude is not valid'),
-
-  (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const validationErrors = {};
-      errors.array().forEach(error => {
-        validationErrors[error.param] = error.msg;
-      });
-
-      return res.status(400).json({
-        message: 'Bad Request',
-        errors: validationErrors
-      });
-    }
-
-    next();
-  },
   handleValidationErrors
 ];
 
