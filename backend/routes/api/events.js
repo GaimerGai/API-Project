@@ -43,6 +43,21 @@ const validateEvent = [
 
     return true;
   }),
+  check('endDate').custom((endDate, { req }) => {
+    const { startDate } = req.body;
+    const currentDate = new Date();
+
+    // Check if the end date is in the past
+    if (new Date(endDate) < currentDate) {
+      throw new Error('End date must be in the future');
+    }
+    // Check if the end date is less than the start date
+    if (new Date(endDate) < new Date(startDate)) {
+      throw new Error('End date is less than the start date');
+    }
+
+    return true;
+  }),
   handleValidationErrors
 ];
 
