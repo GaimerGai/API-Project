@@ -44,8 +44,6 @@ router.delete('/:imageId',
           },
         }));
 
-        console.log("We are here", isAuthorized);
-
       if (!isAuthorized) {
         return res.status(403).json({ message: 'Unauthorized' });
       }

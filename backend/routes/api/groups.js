@@ -221,7 +221,6 @@ router.get(
   async (req, res, next) => {
     try {
       const currentUserId = req.user.id;
-      console.log("current User Id: ", currentUserId);
 
       // Fetch groups without eager loading Membership
       const groups = await Group.findAll({
@@ -263,7 +262,6 @@ router.get(
       const getMembership = await Membership.findAll({
         where: { memberId: currentUserId }
       })
-      console.log(getMembership)
 
       for (const memberShip of getMembership) {
         const groupCheck = await Group.findOne({
@@ -442,7 +440,6 @@ router.delete( //Delete a Group
       if (group.organizerId !== req.user.id) {
         return res.status(403).json({ message: "Unauthorized" });
       }
-      console.log('Group to be deleted:', group);
       await Group.destroy({ where: { id: Number(groupId) } });
 
 
@@ -902,7 +899,7 @@ router.delete( // Delete membership to a group specified by id
           errors: { memberId: 'User couldn\'t be found' },
         });
       }
-      
+
       // Check if the group exists
       const group = await Group.findByPk(groupId);
 

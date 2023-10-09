@@ -183,7 +183,6 @@ router.get(
   '/:eventId',
   async (req, res) => {
     const eventId = req.params.eventId;
-    console.log("This is the eventID-------------------------", eventId)
 
     try {
       // Find the event by its ID
@@ -206,8 +205,6 @@ router.get(
           },
         ],
       });
-
-      console.log("This is the event:==================", event)
 
       if (!event) {
         return res.status(404).json({ message: "Event couldn't be found" });
@@ -417,14 +414,8 @@ router.put( //Change the status of an attendance for an event specified by id
     const eventId = req.params.eventId;
     const loggedInUserId = req.user.id;
     const { userId, status } = req.body;
-    console.log("This is the status:--------------", status)
-    console.log("This is the userID:--------------", userId)
 
     try {
-      // Log eventId and userId for debugging purposes
-      console.log('eventId:', eventId);
-      console.log('userId:', loggedInUserId);
-
       // Check if the event exists
       const event = await Event.findByPk(eventId);
 
@@ -432,8 +423,6 @@ router.put( //Change the status of an attendance for an event specified by id
         return res.status(404).json({ message: "Event couldn't be found" });
       }
 
-      // Log the event to check if it's found
-      console.log('Event found:', event);
 
       // Check if the attendance exists
       const attendee = await Attendee.findOne({
@@ -442,14 +431,10 @@ router.put( //Change the status of an attendance for an event specified by id
           userId
         },
       });
-      console.log('Attendee found:', attendee);
 
       if (!attendee) {
         return res.status(404).json({ message: "Attendance between the user and the event does not exist" });
       }
-
-      // Log the attendee to check if it's found
-      console.log('Attendee found:', attendee);
 
       // Check if the current user is the organizer or a member with co-host status of the group
       const getGroup = await Group.findByPk(event.groupId);
@@ -493,7 +478,8 @@ router.delete( //Delete attendance to an event specified by id
   requireAuth,
   async (req, res) => {
     const eventId = req.params.eventId;
-    const userId = req.user.id;
+    const loggedInUserId = req.user.id;
+    const userToDelete = req.body.userId;
 
     try {
       // Check if the event exists
@@ -507,7 +493,8 @@ router.delete( //Delete attendance to an event specified by id
       const attendance = await Attendee.findOne({
         where: {
           eventId,
-          userId,
+          userId: userToDelete,
+          status:'attending'
         },
       });
 
@@ -519,19 +506,19 @@ router.delete( //Delete attendance to an event specified by id
       const group = await Group.findByPk(event.groupId);
       const isCoHost = await Membership.findOne({
         where: {
-          memberId: userId,
+          memberId: loggedInUserId,
           groupId: event.groupId,
           status: 'co-host',
         }
       })
-      if (isCoHost && userId !== attendance.userId) {
+      if (isCoHost && loggedInUserId !== attendance.userId) {
         return res.status(403).json({ message: "Only the User or organizer may delete an Attendance" });
       }
-      if (userId === attendance.userId && attendance.status === 'attending'){
+      if (userToDelete === attendance.userId){
         await attendance.destroy();
         return res.status(200).json({ message: "Successfully deleted attendance from event" });
       }
-      if(userId === group.organizerId) {
+      if(userToDelete === group.organizerId) {
         // Delete the attendance
         await attendance.destroy();
         return res.status(200).json({ message: "Successfully deleted attendance from event" });
