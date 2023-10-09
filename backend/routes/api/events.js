@@ -517,8 +517,17 @@ router.delete( //Delete attendance to an event specified by id
 
       // Check if the user is authorized to delete the attendance
       const group = await Group.findByPk(event.groupId);
-
-      if (userId === attendance.userId){
+      const isCoHost = await Membership.findOne({
+        where: {
+          memberId: userId,
+          groupId: event.groupId,
+          status: 'co-host',
+        }
+      })
+      if (isCoHost && userId !== attendance.userId) {
+        return res.status(403).json({ message: "Only the User or organizer may delete an Attendance" });
+      }
+      if (userId === attendance.userId && attendance.status === 'attending'){
         await attendance.destroy();
         return res.status(200).json({ message: "Successfully deleted attendance from event" });
       }
@@ -527,6 +536,7 @@ router.delete( //Delete attendance to an event specified by id
         await attendance.destroy();
         return res.status(200).json({ message: "Successfully deleted attendance from event" });
       }
+
       else{
         return res.status(403).json({ message: "Only the User or organizer may delete an Attendance" });
       }
