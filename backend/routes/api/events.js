@@ -47,13 +47,13 @@ const validateEvent = [
     const { startDate } = req.body;
     const currentDate = new Date();
 
-    // Check if the end date is in the past
-    if (new Date(endDate) < currentDate) {
-      throw new Error('End date must be in the future');
-    }
     // Check if the end date is less than the start date
     if (new Date(endDate) < new Date(startDate)) {
       throw new Error('End date is less than the start date');
+    }
+    // Check if the end date is in the past
+    if (new Date(endDate) < currentDate) {
+      throw new Error('End date must be in the future');
     }
 
     return true;
@@ -297,7 +297,7 @@ router.get('/:eventId/attendees', async (req, res) => {
       for (const attendee of attendeesNotPending) {
         const getUserData = await User.findByPk(attendee.userId);
         responseIfNotOrganizerAndNotCoHost.push({
-          id: getUserData.userId,
+          id: getUserData.id,
           firstName: getUserData.firstName,
           lastName: getUserData.lastName,
           Attendance: {
@@ -319,7 +319,7 @@ router.get('/:eventId/attendees', async (req, res) => {
       for (const attendee of attendees) {
         const getUserData = await User.findByPk(attendee.userId);
         responseIfOrganizerAndCohost.push({
-          id: getUserData.userId,
+          id: getUserData.id,
           firstName: getUserData.firstName,
           lastName: getUserData.lastName,
           Attendance: {
@@ -462,7 +462,7 @@ router.put( //Change the status of an attendance for an event specified by id
 
       // Return the updated attendance
       return res.status(200).json({
-        id: attendee.id,
+        id: loggedInUserId,
         eventId: attendee.eventId,
         userId: attendee.userId,
         status: attendee.status,
@@ -511,10 +511,10 @@ router.delete( //Delete attendance to an event specified by id
           status: 'co-host',
         }
       })
-      if (isCoHost && loggedInUserId !== attendance.userId) {
+      if (isCoHost && loggedInUserId !== userToDelete) {
         return res.status(403).json({ message: "Only the User or organizer may delete an Attendance" });
       }
-      if (userToDelete === attendance.userId){
+      if (userToDelete === loggedInUserId){
         await attendance.destroy();
         return res.status(200).json({ message: "Successfully deleted attendance from event" });
       }

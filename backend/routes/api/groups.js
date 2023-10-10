@@ -77,13 +77,13 @@ const validateEvent = [
     const { startDate } = req.body;
     const currentDate = new Date();
 
-    // Check if the end date is in the past
-    if (new Date(endDate) < currentDate) {
-      throw new Error('End date must be in the future');
-    }
     // Check if the end date is less than the start date
     if (new Date(endDate) < new Date(startDate)) {
       throw new Error('End date is less than the start date');
+    }
+    // Check if the end date is in the past
+    if (new Date(endDate) < currentDate) {
+      throw new Error('End date must be in the future');
     }
 
     return true;
@@ -369,7 +369,11 @@ router.get( //Get details of a Group from an id
         updatedAt:group.updatedAt,
         numMembers: numMembers,
         GroupImages: groupImages,
-        Organizer: group.User,
+        Organizer: {
+          id: group.User.id,
+          firstName: group.User.firstName,
+          lastName: group.User.lastName,
+        },
         Venues: venues,
       };
 
@@ -836,7 +840,7 @@ router.put( //Change the status of a membership for a group specified by id
 
           return res.status(200).json(response);
         } else {
-          return res.status(403).json({ message: 'Unauthorized' });
+          return res.status(403).json({ message: 'Forbidden' });
         }
       } else if (status === 'co-host') {
         if (isOrganizer) {
