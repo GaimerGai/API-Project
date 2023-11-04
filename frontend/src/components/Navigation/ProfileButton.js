@@ -19,7 +19,7 @@ function ProfileButton({ user }) {
     if (!showMenu) return;
 
     const closeMenu = (e) => {
-      if (!ulRef.current.contains(e.target)) {
+      if (!ulRef.current?.contains(e.target)) {
         setShowMenu(false);
       }
     };
@@ -44,6 +44,7 @@ function ProfileButton({ user }) {
       <button onClick={openMenu}>
         <i className="fas fa-user-circle" />
       </button>
+      {showMenu &&
       <ul className={ulClassName} ref={ulRef}>
         {user ? (
           <>
@@ -69,6 +70,7 @@ function ProfileButton({ user }) {
           </>
         )}
       </ul>
+      }
     </>
   );
 }
