@@ -16,6 +16,7 @@ const removeUser = () => {
   };
 };
 
+//login thunk
 export const login = (user) => async (dispatch) => {
   const { credential, password } = user;
   const response = await csrfFetch("/api/session", {
@@ -30,6 +31,8 @@ export const login = (user) => async (dispatch) => {
   return response;
 };
 
+
+//ensure user who is not logged out but has refreshed the page stays logged in
 export const restoreUser = () => async (dispatch) => {
   const response = await csrfFetch("/api/session");
   const data = await response.json();
@@ -37,6 +40,7 @@ export const restoreUser = () => async (dispatch) => {
   return response;
 };
 
+//signup thunk
 export const signup = (user) => async (dispatch) => {
   const { username, firstName, lastName, email, password } = user;
   const response = await csrfFetch("/api/users", {
@@ -54,6 +58,7 @@ export const signup = (user) => async (dispatch) => {
   return response;
 };
 
+//logout thunk
 export const logout = () => async (dispatch) => {
   const response = await csrfFetch('/api/session', {
     method: 'DELETE',
