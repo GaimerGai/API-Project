@@ -5,6 +5,7 @@ import * as sessionActions from "./store/session";
 import * as groupActions from "./store/group"
 import Navigation from "./components/Navigation";
 import Groups from "./components/Groups";
+import GroupDetail from "./components/Groups/GroupDetail";
 
 function App() {
   const dispatch = useDispatch();
@@ -13,6 +14,7 @@ function App() {
   useEffect(() => {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
   }, [dispatch]);
+  
 
   return (
     <>
@@ -21,6 +23,7 @@ function App() {
       <Switch>
         <Route exact path = "/"/>
         <Route exact path = "/groups" component ={Groups}/>
+        <Route path="/groups/:groupId" component={GroupDetail} />
       </Switch>}
     </>
   );
