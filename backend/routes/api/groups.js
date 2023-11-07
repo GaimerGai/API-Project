@@ -160,6 +160,8 @@ router.get(
 
         const numMembers = await Membership.count({ where: { groupId: group.id } });
 
+        const numEvents = await Event.count({ where: { groupId: group.id } });
+
         const images = await Image.findAll({ where: { imageableId: group.id, imageableType: 'Group', preview: true, } });
 
         const previewImage = images.length > 0 ? images[0].url : null;
@@ -176,6 +178,7 @@ router.get(
           createdAt: group.createdAt,
           updatedAt: group.updatedAt,
           numMembers: numMembers,
+          numEvents:numEvents,
           previewImage: previewImage,
         };
       }));
@@ -243,6 +246,7 @@ router.get(
       for (const group of groups) {
         // Calculate numMembers inside the loop
         const numMembers = await Membership.count({ where: { groupId: group.id } });
+        const numEvents = await Event.count({ where: { groupId: group.id } });
 
         totalGroups.push({
           id: group.id,
@@ -256,6 +260,7 @@ router.get(
           createdAt: group.createdAt,
           updatedAt: group.updatedAt,
           numMembers: numMembers,
+          numEvents:numEvents,
           previewImage: group.Images.length > 0 ? group.Images[0].url : null,
         });
       }

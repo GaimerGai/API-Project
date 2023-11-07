@@ -1,7 +1,3 @@
-// import { csrfFetch } from './csrf';
-
-import Groups from "../components/Groups";
-
 /** Action Type Constants: */
 const LOAD_GROUPS = 'groups/loadGroups';
 
@@ -12,12 +8,23 @@ const loadGroups = (groups) => ({
 });
 
 /** Thunk Action Creators: */
+// Get All Groups
 export const fetchGroups = () => async (dispatch) => {
   const response = await fetch('/api/groups');
 
   if (response.ok) {
     const data = await response.json();
     dispatch(loadGroups(data.Groups))
+  }
+}
+
+//Get details of a Group from an id
+export const fetchGroupById = (groupId) => async (dispatch) => {
+  const response = await fetch(`api/groups/${groupId}`);
+
+  if (response.ok){
+    const data = await response.json();
+    dispatch(loadGroups(data.Groups.groupId))
   }
 }
 

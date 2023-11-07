@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from 'react-redux';
 import { fetchGroups } from "../../store/group";
+import GroupIndexItem from "./GroupIndexItem";
+import { Link } from "react-router-dom";
 
 
 function Groups() {
@@ -19,12 +21,10 @@ function Groups() {
       <h2>Groups</h2>
       <ul>
         {Object.values(groups).map((group) => (
-          <li key={group.id}>
-            <div>
-              <h3>{group.name}</h3>
-              <p>{group.about}</p>
-            </div>
-          </li>
+            <Link to={`/groups/${group.id}`}>{<GroupIndexItem
+              group={group}
+              key={group.id}
+            />}</Link>
         ))}
       </ul>
     </div>
