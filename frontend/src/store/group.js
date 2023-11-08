@@ -20,7 +20,7 @@ export const fetchGroups = () => async (dispatch) => {
 
 //Get details of a Group from an id
 export const fetchGroupById = (groupId) => async (dispatch) => {
-  const response = await fetch(`api/groups/${groupId}`);
+  const response = await fetch(`/api/groups/${groupId}`);
 
   if (response.ok){
     const data = await response.json();
@@ -37,7 +37,7 @@ const groupsReducer = (state = {}, action) =>{
       action.groups.forEach((group) => {
         groupsState[group.id] = group;
       });
-      return groupsState;
+      return {...groupsState};
     default:
       return state
   }
