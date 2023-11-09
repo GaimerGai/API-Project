@@ -39,7 +39,7 @@ function GroupDetail() {
           </p>
         </div>
         <div>
-          
+
         </div>
       </div>
     )
