@@ -11,7 +11,7 @@ import { useLocation } from "react-router-dom";
 import OpenModalMenuItem from "./components/Navigation/OpenModalMenuItem";
 import SignupFormModal from "./components/SignupFormModal";
 import Events from "./components/Events";
-import EventDetail from "./components/Groups/GroupDetail";
+import EventDetail from "./components/Events/EventDetail";
 
 
 function App() {
