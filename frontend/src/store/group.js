@@ -1,6 +1,9 @@
 /** Action Type Constants: */
 const LOAD_GROUPS = 'groups/loadGroups';
 const LOAD_GROUP = 'groups/loadGroup';
+const CREATE_GROUP = 'groups/createGroup';
+const UPDATE_GROUP = 'groups/updateGroup';
+const DELETE_GROUP = 'groups/deleteGroup';
 
 /**  Action Creators: */
 const loadGroups = (groups) => ({
@@ -10,6 +13,21 @@ const loadGroups = (groups) => ({
 
 const loadGroup = (group) => ({
   type: LOAD_GROUP,
+  group,
+});
+
+const createGroup = (payload) =>({
+  type:CREATE_GROUP,
+  payload,
+});
+
+const updateGroup = (payload) =>({
+  type:UPDATE_GROUP,
+  payload,
+});
+
+const deleteGroup = (group) => ({
+  type: DELETE_GROUP,
   group,
 });
 
@@ -35,19 +53,34 @@ export const fetchGroupById = (groupId) => async (dispatch) => {
 }
 
 
-const groupsReducer = (state = {}, action) =>{
-  switch(action.type){
+const groupsReducer = (state = {groups:{},currGroup:{}}, action) => {
+  switch (action.type) {
     case LOAD_GROUPS:
-      const groupsState = {}
+      const groupsState = {};
       action.groups.forEach((group) => {
         groupsState[group.id] = group;
       });
-      return {...groupsState};
-      case LOAD_GROUP:
-        const groupState = action.group
-        return groupState;
+      return {...state, groups:groupsState};
+
+    case CREATE_GROUP:{
+      const groups={...state.groups}
+      groups[action.group.id]=action.group
+      return { ...state, groups };
+    }
+
+    case UPDATE_GROUP:{
+      const groups={...state.groups}
+      groups[action.group.id]=action.group
+      return { ...state, groups };
+    }
+    case DELETE_GROUP:
+      const newState = { ...state };
+      delete newState[action.groupId];
+      return newState;
+    case LOAD_GROUP:
+      return {...state, currGroup:action.group}
     default:
-      return state
+      return state;
   }
 };
 

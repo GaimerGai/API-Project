@@ -14,7 +14,7 @@ function GroupDetail() {
     dispatch(fetchGroupById(groupId)).then(() => setIsLoaded(true));
   }, [dispatch, groupId]);
 
-  const data = useSelector((state) => state.groups);
+  const data = useSelector((state) => state.groups.currGroup);
   console.log("This is data:",data)
 
   let isPrivate = '';

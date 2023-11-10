@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 
 
 function Groups() {
-  const groups = useSelector((state) => state.groups);
+  const groups = useSelector((state) => state.groups.groups);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const dispatch = useDispatch();
