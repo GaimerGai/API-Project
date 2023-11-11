@@ -101,6 +101,14 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
     },
+    hostFirstName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    hostLastName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     startDate: {
       type: DataTypes.DATE,
       allowNull: false,

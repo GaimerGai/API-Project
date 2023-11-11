@@ -533,6 +533,7 @@ router.post(
   validateEvent,
   async (req, res) => {
     const { groupId } = req.params;
+    const {hostFirstName, hostLastName} = req.user
     // const errors = validationResult(req);
 
     // if (!errors.isEmpty()) {
@@ -575,6 +576,8 @@ router.post(
         capacity: req.body.capacity,
         price: req.body.price,
         description: req.body.description,
+        hostFirstName: hostFirstName,
+        hostLastName: hostLastName,
         startDate: req.body.startDate,
         endDate: req.body.endDate,
       });
@@ -588,6 +591,8 @@ router.post(
         capacity: event.capacity,
         price:event.price,
         description:event.description,
+        hostFirstName: event.hostFirstName,
+        hostLastName: event.hostLastName,
         startDate:event.startDate,
         endDate:event.endDate,
       }

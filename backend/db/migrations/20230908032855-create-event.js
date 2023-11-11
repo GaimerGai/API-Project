@@ -25,7 +25,7 @@ module.exports = {
       },
       venueId: {
         type: Sequelize.INTEGER,
-        
+
         references:{
           model:'Venues',
           key:'id'
@@ -50,6 +50,14 @@ module.exports = {
       description: {
         type: Sequelize.STRING,
         allowNull: false,
+      },
+      hostFirstName: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      hostLastName: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       startDate: {
         type: Sequelize.DATE,
