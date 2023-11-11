@@ -14,7 +14,7 @@ function EventDetail() {
     dispatch(fetchEventById(eventId)).then(() => setIsLoaded(true));
   }, [dispatch, eventId]);
 
-  const data = useSelector((state) => state.events);
+  const data = useSelector((state) => state.events.currEvent);
   console.log("This is data:",data)
 
   let isPrivate = '';

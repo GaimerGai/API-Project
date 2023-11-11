@@ -4,6 +4,7 @@ import * as sessionActions from '../../store/session';
 import OpenModalMenuItem from './OpenModalMenuItem';
 import LoginFormModal from '../LoginFormModal';
 import SignupFormModal from '../SignupFormModal';
+import { Link} from "react-router-dom";
 
 function ProfileButton({ user }) {
   const dispatch = useDispatch();
@@ -49,10 +50,17 @@ function ProfileButton({ user }) {
         {user ? (
           <>
             <li>Hello {user.firstName}</li>
-            <li>
-              <button>ViewGroups</button>
-            </li>
             <li>{user.email}</li>
+            <li>
+              <button>
+              <Link to="/groups">See All Groups</Link>
+              </button>
+            </li>
+            <li>
+              <button>
+              <Link to="/events">See All Events</Link>
+              </button>
+            </li>
             <li>
               <button onClick={logout}>Log Out</button>
             </li>

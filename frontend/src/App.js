@@ -13,6 +13,7 @@ import SignupFormModal from "./components/SignupFormModal";
 import Events from "./components/Events";
 import EventDetail from "./components/Events/EventDetail";
 
+export const loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit,sed do eiusmod tempor incididunt ut labore et dolore magnaaliqua. Ut enim ad minim veniam, quis nostrud exercitationullamco laboris nisi ut aliquip ex ea commodo consequat.Duis aute irure dolor in reprehenderit in voluptat evelit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
 
 function App() {
   const dispatch = useDispatch();
@@ -22,7 +23,6 @@ function App() {
   const [showMenu, setShowMenu] = useState(false);
   const ulRef = useRef();
 
-  const loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit,sed do eiusmod tempor incididunt ut labore et dolore magnaaliqua. Ut enim ad minim veniam, quis nostrud exercitationullamco laboris nisi ut aliquip ex ea commodo consequat.Duis aute irure dolor in reprehenderit in voluptat evelit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
 
   const closeMenu = (e) => {
     if (!ulRef.current?.contains(e.target)) {

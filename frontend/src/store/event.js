@@ -1,6 +1,11 @@
 /** Action Type Constants: */
 const LOAD_EVENTS = 'events/loadEvents';
 const LOAD_EVENT = 'events/loadEvent';
+const CREATE_EVENT = 'events/createEvent';
+const UPDATE_EVENT = 'events/updateEvent';
+const DELETE_EVENT = 'events/deleteEvent';
+
+
 /**  Action Creators: */
 const loadEvents = (events) => ({
   type: LOAD_EVENTS,
@@ -9,6 +14,21 @@ const loadEvents = (events) => ({
 
 const loadEvent = (event) => ({
   type: LOAD_EVENT,
+  event,
+});
+
+const createEvent = (payload) => ({
+  type: CREATE_EVENT,
+  payload,
+});
+
+const updateEvent = (payload) => ({
+  type: UPDATE_EVENT,
+  payload,
+});
+
+const deleteEvent = (event) => ({
+  type: DELETE_EVENT,
   event,
 });
 
@@ -34,20 +54,36 @@ export const fetchEventById = (eventId) => async (dispatch) => {
 }
 
 
-const eventsReducer = (state = {}, action) => {
+const eventsReducer = (state = { events: {}, currEvent: {} }, action) => {
   switch (action.type) {
     case LOAD_EVENTS:
-      console.log(action)
-      const eventsState = {}
+      const eventsState = {};
       action.events.forEach((event) => {
         eventsState[event.id] = event;
       });
-      return { ...eventsState };
+      return { ...state, events: eventsState };
+
     case LOAD_EVENT:
-      const eventState = action.event
-      return eventState;
+      return { ...state, currEvent: action.event }
+
+    case CREATE_EVENT: {
+      const events = { ...state.events }
+      events[action.event.id] = action.event
+      return { ...state, events };
+    }
+
+    case UPDATE_EVENT: {
+      const events = { ...state.events }
+      events[action.event.id] = action.event
+      return { ...state, events };
+    }
+    case DELETE_EVENT:
+      const newState = { ...state };
+      delete newState[action.eventId];
+      return newState;
+
     default:
-      return state
+      return state;
   }
 };
 

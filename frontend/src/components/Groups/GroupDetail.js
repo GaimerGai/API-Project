@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchGroupById } from "../../store/group";
+import { fetchGroupById, fetchEventsByGroupId } from "../../store/group";
 import { Link, useParams } from "react-router-dom";
+import { loremIpsum } from "../../App";
 
 
 
@@ -11,15 +12,30 @@ function GroupDetail() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(fetchGroupById(groupId)).then(() => setIsLoaded(true));
+    dispatch(fetchGroupById(groupId))
+    .then(() => dispatch(fetchEventsByGroupId(groupId)))
+    .then(() => setIsLoaded(true));
   }, [dispatch, groupId]);
 
-  const data = useSelector((state) => state.groups.currGroup);
-  console.log("This is data:",data)
+  const groupData = useSelector((state) => state.groups.currGroup);
+
+  const eventData = useSelector((state) =>state.groups.Events)
+
+  console.log("This is eventData:", eventData)
 
   let isPrivate = '';
-  if (data.private) isPrivate = 'Private';
-  if (!data.private) isPrivate = 'Public'
+  if (groupData.private) isPrivate = 'Private';
+  if (!groupData.private) isPrivate = 'Public'
+
+  const handleJoinGroup = () => {
+    alert("Feature Coming Soon");
+  };
+
+  const now = new Date();
+  const upcomingEvents = Object.values(eventData).filter((event) => new Date(event.startDate) > now);
+  console.log("this is upcomingEvents:", upcomingEvents)
+  const pastEvents = Object.values(eventData).filter((event) => new Date(event.startDate) <= now);
+  console.log("this is pastEvents:", pastEvents)
 
   return (
     isLoaded && (
@@ -27,19 +43,25 @@ function GroupDetail() {
         <div className="backlink">
           <Link to="/groups">Groups</Link>
         </div>
-        <div className="topcard">
-          <h2>Group Details</h2>
-          <h2>{data.name}</h2>
+        <div className="topCard">
+          <h2>{groupData.name}</h2>
           <h3>
-            {data.city}, {data.state}
+            {groupData.city}, {groupData.state}
           </h3>
-          <p>Number of Events: {data.numEvents} * {isPrivate}</p>
+          <p>Number of Events: {groupData.numEvents} * {isPrivate}</p>
           <p>
-            Organized by: {data.Organizer.firstName} {data.Organizer.lastName}
+            Organized by: {groupData.Organizer.firstName} {groupData.Organizer.lastName}
           </p>
+          <button onClick={handleJoinGroup}>Join this group</button>
         </div>
-        <div>
-
+        <div className="middleCard">
+          <h2>Organizer</h2>
+          <p>{groupData.Organizer.firstName} {groupData.Organizer.lastName}</p>
+          <h2>What We're about</h2>
+          <p>{loremIpsum}</p>
+        </div>
+        <div className="eventsCard">
+          <h2></h2>
         </div>
       </div>
     )
