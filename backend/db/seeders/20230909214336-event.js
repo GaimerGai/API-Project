@@ -35,6 +35,19 @@ module.exports = {
         startDate: new Date('2023-09-20T14:00:00Z'),
         endDate: new Date('2023-09-20T18:00:00Z'),
       },
+      {
+        groupId: 1,
+        venueId: 3,
+        name: 'Future Event 1',
+        type: 'Online',
+        capacity: 80,
+        price: 25.00,
+        description: 'This is a future event description.',
+        hostFirstName: 'Jane',
+        hostLastName: 'Doe',
+        startDate: new Date('2023-12-12T12:00:00Z'),
+        endDate: new Date('2023-12-12T16:00:00Z'),
+      },
     ]);
   },
 
@@ -43,7 +56,7 @@ module.exports = {
       options.tableName = 'Events';
       const Op = Sequelize.Op;
       return queryInterface.bulkDelete(options, {
-        name: { [Op.in]: ['Sample Event 1', 'Sample Event 2'] }
+        name: { [Op.in]: ['Sample Event 1', 'Sample Event 2', 'Future Event 1',] }
       }, {});
     }
     else{

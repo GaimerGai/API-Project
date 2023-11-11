@@ -153,6 +153,8 @@ router.get( //Get All Events with Query Filters
           type: event.type,
           startDate: event.startDate,
           endDate: event.endDate,
+          hostFirstName: event.hostFirstName,
+          hostLastName: event.hostLastName,
           numAttending: numAttending,
           previewImage: previewImage,
           Group: {
@@ -223,6 +225,8 @@ router.get(
         type: event.type,
         capacity: event.capacity,
         price: event.price,
+        hostFirstName: event.hostFirstName,
+        hostLastName: event.hostLastName,
         startDate: event.startDate,
         endDate: event.endDate,
         numAttending: numAttending,

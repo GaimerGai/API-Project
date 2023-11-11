@@ -13,13 +13,13 @@ function GroupDetail() {
 
   useEffect(() => {
     dispatch(fetchGroupById(groupId))
-    .then(() => dispatch(fetchEventsByGroupId(groupId)))
-    .then(() => setIsLoaded(true));
+      .then(() => dispatch(fetchEventsByGroupId(groupId)))
+      .then(() => setIsLoaded(true));
   }, [dispatch, groupId]);
 
   const groupData = useSelector((state) => state.groups.currGroup);
 
-  const eventData = useSelector((state) =>state.groups.Events)
+  const eventData = useSelector((state) => state.groups.Events)
 
   console.log("This is eventData:", eventData)
 
@@ -32,9 +32,11 @@ function GroupDetail() {
   };
 
   const now = new Date();
-  const upcomingEvents = Object.values(eventData).filter((event) => new Date(event.startDate) > now);
+  const upcomingEvents = Object.values(eventData).filter((event) => new Date(event.startDate) > now)
+    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));;
   console.log("this is upcomingEvents:", upcomingEvents)
-  const pastEvents = Object.values(eventData).filter((event) => new Date(event.startDate) <= now);
+  const pastEvents = Object.values(eventData).filter((event) => new Date(event.startDate) <= now)
+    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));;
   console.log("this is pastEvents:", pastEvents)
 
   return (
@@ -61,7 +63,36 @@ function GroupDetail() {
           <p>{loremIpsum}</p>
         </div>
         <div className="eventsCard">
-          <h2></h2>
+          {upcomingEvents.length > 0 && (
+            <div className="upcoming-Events">
+              <h2>Upcoming Events</h2>
+              {upcomingEvents.map((event) => (
+                <div key={event.id} className="event-card">
+                  <h3>Title: {event.name}</h3>
+                  <p>Date: {new Date(event.startDate).toLocaleDateString()}</p>
+                  <p>Time: {new Date(event.startDate).toLocaleTimeString()}</p>
+                  <img src={event.previewImage} alt={event.name} />
+                  <p>Location: {event.Venue ? event.Venue.city : "Online"}</p>
+                  <p>Description: {event.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          {pastEvents.length > 0 && (
+            <div className="past-Events">
+              <h2>Past Events</h2>
+              {pastEvents.map((event) => (
+                <div key={event.id} className="event-card">
+                  <h3>Title: {event.name}</h3>
+                  <p>Date: {new Date(event.startDate).toLocaleDateString()}</p>
+                  <p>Time: {new Date(event.startDate).toLocaleTimeString()}</p>
+                  <img src={event.previewImage} alt={event.name} />
+                  <p>Location: {event.Venue ? event.Venue.city : "Online"}</p>
+                  <p>Description: {event.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     )

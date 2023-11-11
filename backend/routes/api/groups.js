@@ -505,6 +505,7 @@ router.get( //Get all Events of a Group specified by its id
           venueId: event.venueId,
           name: event.name,
           type: event.type,
+          description:event.description,
           startDate: event.startDate,
           endDate: event.endDate,
           numAttending,
