@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchGroupById, fetchEventsByGroupId } from "../../store/group";
+import { fetchGroupById, fetchEventsByGroupId, deleteSelectedGroup } from "../../store/group";
 import { Link, useParams } from "react-router-dom";
 import { loremIpsum } from "../../App";
 
@@ -31,6 +31,14 @@ function GroupDetail() {
     alert("Feature Coming Soon");
   };
 
+  const handleDelete = () => {
+    dispatch(deleteSelectedGroup(groupData.id));
+  };
+
+  const handleEdit = () => {
+    <Link to={`/groups/${groupData.id}/edit`}></Link>
+  }
+
   const now = new Date();
   const upcomingEvents = Object.values(eventData).filter((event) => new Date(event.startDate) > now)
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));;
@@ -55,6 +63,8 @@ function GroupDetail() {
             Organized by: {groupData.Organizer.firstName} {groupData.Organizer.lastName}
           </p>
           <button onClick={handleJoinGroup}>Join this group</button>
+          <button onClick={handleEdit}>Edit</button>
+          <button onClick={handleDelete}>Delete</button>
         </div>
         <div className="middleCard">
           <h2>Organizer</h2>

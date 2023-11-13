@@ -98,7 +98,18 @@ export const updateExistingGroup = (payload) => async (dispatch) => {
   return response;
 }
 
+export const deleteSelectedGroup = (groupId) => async (dispatch) => {
+  const res = await fetch(`/api/groups/${groupId}`, {
+      method: "DELETE",
+  });
 
+  if (res.ok) {
+      const data = await res.json();
+      dispatch(deleteGroup(groupId));
+      return data;
+  }
+  return res;
+};
 
 const groupsReducer = (state = { groups: {}, currGroup: {}, Events: {} }, action) => {
   switch (action.type) {
