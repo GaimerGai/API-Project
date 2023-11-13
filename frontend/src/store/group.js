@@ -58,6 +58,7 @@ export const fetchGroupById = (groupId) => async (dispatch) => {
   }
 }
 
+//Get all Events by Group ID
 export const fetchEventsByGroupId = (groupId) => async dispatch => {
   const response = await fetch(`/api/groups/${groupId}/events`);
 
@@ -66,6 +67,37 @@ export const fetchEventsByGroupId = (groupId) => async dispatch => {
     dispatch(getEventsByGroup(data))
   }
 }
+
+export const postNewGroup = (payload) => async (dispatch) => {
+  const response = await fetch(`/api/groups`, {
+    method: "POST",
+    headers: {"Content-Type":"application.json"},
+    body: JSON.stringify(payload)
+  });
+
+  if (response.ok){
+    const data = await response.json();
+    dispatch(createGroup(data))
+    return data;
+  }
+  return response;
+}
+
+export const updateExistingGroup = (payload) => async (dispatch) => {
+  const response = await fetch(`/api/groups/${payload.id}`, {
+    method: "PUT",
+    headers: {"Content-Type":"application.json"},
+    body: JSON.stringify(payload)
+  });
+
+  if (response.ok){
+    const data = await response.json();
+    dispatch(updateGroup(data))
+    return data;
+  }
+  return response;
+}
+
 
 
 const groupsReducer = (state = { groups: {}, currGroup: {}, Events: {} }, action) => {

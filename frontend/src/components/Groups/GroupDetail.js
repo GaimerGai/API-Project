@@ -18,8 +18,8 @@ function GroupDetail() {
   }, [dispatch, groupId]);
 
   const groupData = useSelector((state) => state.groups.currGroup);
-
   const eventData = useSelector((state) => state.groups.Events)
+
 
   console.log("This is eventData:", eventData)
 

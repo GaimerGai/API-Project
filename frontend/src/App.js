@@ -6,6 +6,7 @@ import * as groupActions from "./store/group"
 import Navigation from "./components/Navigation";
 import Groups from "./components/Groups";
 import GroupDetail from "./components/Groups/GroupDetail";
+import CreateGroupForm from "./components/Groups/CreateGroupForm";
 import { Link, useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import OpenModalMenuItem from "./components/Navigation/OpenModalMenuItem";
@@ -79,8 +80,9 @@ function App() {
         <Switch>
           <Route exact path="/" />
           <Route exact path="/groups" component={Groups} />
-          <Route path="/groups/:groupId" component={GroupDetail} />
+          <Route exact path="/groups/new" component = {CreateGroupForm}/>
           <Route exact path="/events" component={Events} />
+          <Route path="/groups/:groupId" component={GroupDetail} />
           <Route path="/events/:eventId" component={EventDetail} />
         </Switch>
       )}
