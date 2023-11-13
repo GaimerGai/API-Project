@@ -7,6 +7,7 @@ import Navigation from "./components/Navigation";
 import Groups from "./components/Groups";
 import GroupDetail from "./components/Groups/GroupDetail";
 import CreateGroupForm from "./components/Groups/CreateGroupForm";
+import EditGroupForm from "./components/Groups/EditGroupForm";
 import { Link, useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import OpenModalMenuItem from "./components/Navigation/OpenModalMenuItem";
@@ -81,6 +82,7 @@ function App() {
           <Route exact path="/" />
           <Route exact path="/groups" component={Groups} />
           <Route exact path="/groups/new" component = {CreateGroupForm}/>
+          <Route path="/groups/:groupId/edit" component={EditGroupForm}/>
           <Route exact path="/events" component={Events} />
           <Route path="/groups/:groupId" component={GroupDetail} />
           <Route path="/events/:eventId" component={EventDetail} />

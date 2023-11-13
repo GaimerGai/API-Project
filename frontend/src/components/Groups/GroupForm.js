@@ -76,81 +76,102 @@ const GroupForm = ({ group, formType }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>{formType}</h2>
+      <h3>Become an Organizer</h3>
+      <h2>We'll walk you through a few steps to build your local community</h2>
 
-      <label>
-        Group Location:
-        <input
-          type="text"
-          placeholder="City, STATE"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-        />
-      </label>
-      {errors.location && <div className="errors">{errors.location}</div>}
 
-      <label>
-        Group Name:
-        <input
-          type="text"
-          placeholder="What is your group name?"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </label>
-      {errors.name && <div className="errors">{errors.name}</div>}
-      <div className="errors">{errors.description}</div>
+      <div className='location-instructions'>
+        <h2>First, set your group's location.</h2>
+        <h3>Meetup groups meet locally, in person and online. We'll connect you with people
+          in your area, and more can join you online.</h3>
+        <label>
+          <input
+            type="text"
+            placeholder="City, STATE"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
+        </label>
+        {errors.location && <div className="errors">{errors.location}</div>}
+      </div>
 
-      <label>
-        Description:
-        <textarea
-          placeholder="Please write at least 30 characters"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </label>
-      {errors.description && <div className="errors">{errors.description}</div>}
+      <div className='name-instructions'>
+        <h2>What will your group's name be?</h2>
+        <h3>Choose a name that will give people a clear idea of what the group is about.
+          Feel free to get creative! You can edit this later if you change your mind.</h3>
+        <label>
+          <input
+            type="text"
+            placeholder="What is your group name?"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </label>
+        {errors.name && <div className="errors">{errors.name}</div>}
+        <div className="errors">{errors.description}</div>
+      </div>
 
-      <label>
-        Online Status:
-        <select
-          value={onlineStatus}
-          onChange={(e) => setOnlineStatus(e.target.value)}
-        >
-          <option value="" disabled>
-            (Select One)
-          </option>
-          <option value="online">Online</option>
-          <option value="inPerson">In Person</option>
-        </select>
-      </label>
-      {errors.onlineStatus && <div className="errors">{errors.onlineStatus}</div>}
+      <div className='description-instructions'>
+        <h2>Now describe what your group will be about</h2>
+        <h3>People will see this when we promote your group, but you'll be able to add to it later, too</h3>
+        <ol>
+          <li>What's the purpose of the group?</li>
+          <li>Who should join?</li>
+          <li>What will you do at your events?</li>
+        </ol>
+        <label>
+          <textarea
+            placeholder="Please write at least 30 characters"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </label>
+        {errors.description && <div className="errors">{errors.description}</div>}
+      </div>
 
-      <label>
-        Privacy:
-        <select
-          value={privacy}
-          onChange={(e) => setPrivacy(e.target.value)}
-        >
-          <option value="" disabled>
-            (Select One)
-          </option>
-          <option value="private">Private</option>
-          <option value="public">Public</option>
-        </select>
-      </label>
-      {errors.privacy && <div className="errors">{errors.privacy}</div>}
+      <div className='statuses-and-url'>
+        <h2>Final Steps</h2>
+        <h3>Is this an in person or online group?</h3>
+        <label>
+          <select
+            value={onlineStatus}
+            onChange={(e) => setOnlineStatus(e.target.value)}
+          >
+            <option value="" disabled>
+              (Select One)
+            </option>
+            <option value="online">Online</option>
+            <option value="inPerson">In Person</option>
+          </select>
+        </label>
+        {errors.onlineStatus && <div className="errors">{errors.onlineStatus}</div>}
 
-      <label>
-        Image URL:
-        <input
-          type="text"
-          placeholder="Image URL"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-        />
-      </label>
-      {errors.imageUrl && <div className="errors">{errors.imageUrl}</div>}
+        <h3>Is this group private or public</h3>
+        <label>
+          <select
+            value={privacy}
+            onChange={(e) => setPrivacy(e.target.value)}
+          >
+            <option value="" disabled>
+              (Select One)
+            </option>
+            <option value="private">Private</option>
+            <option value="public">Public</option>
+          </select>
+        </label>
+        {errors.privacy && <div className="errors">{errors.privacy}</div>}
+
+        <h3>Please add in image url for your group below:</h3>
+        <label>
+          <input
+            type="text"
+            placeholder="Image URL"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+          />
+        </label>
+        {errors.imageUrl && <div className="errors">{errors.imageUrl}</div>}
+      </div>
 
       <button type="submit">Create Group</button>
     </form>
