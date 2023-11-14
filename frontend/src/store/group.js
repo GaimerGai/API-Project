@@ -79,7 +79,7 @@ export const postNewGroup = (payload) => async (dispatch) => {
   });
 
   if (response.ok){
-    console.log(payload)
+    console.log("This is the payload if the response is ok:", payload)
     const data = await response.json();
     dispatch(createGroup(data))
     return data;
