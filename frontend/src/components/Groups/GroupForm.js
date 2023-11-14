@@ -8,11 +8,10 @@ const GroupForm = ({ group, formType }) => {
   const history = useHistory();
 
   const userData = useSelector((state) => state.session.user);
-  console.log("This is UserData: ", userData);
 
-  const [location, setLocation] = useState(group?.location || '');
-  const [city, setCity] =  useState(group?.city || '');
-  const [state, setState] =  useState(group?.state || '');
+  // const [location, setLocation] = useState(group?.location || '');
+  const [city, setCity] = useState(group?.city || '');
+  const [state, setState] = useState(group?.state || '');
   const [name, setName] = useState(group?.name || '');
   const [about, setAbout] = useState(group?.about || '');
   const [onlineStatus, setOnlineStatus] = useState(group?.onlineStatus || '');
@@ -33,17 +32,12 @@ const GroupForm = ({ group, formType }) => {
       newErrors.about = 'About needs 30 or more characters';
     }
 
-    if (!location.trim()) {
-      newErrors.location = 'Location is required';
-    } else {
-      const [inputCity, inputState] = location.split(',').map((part) => part.trim())
+    if (!city.trim()) {
+      newErrors.city = 'Location is required';
+    }
 
-      if(!inputCity || !inputState){
-        newErrors.location = ('Please enter both city and state separated by a comma.');
-      }
-
-      setCity(inputCity)
-      setState(inputState)
+    if (!state.trim()) {
+      newErrors.city = 'Location is required';
     }
 
     if (!onlineStatus) {
@@ -79,18 +73,20 @@ const GroupForm = ({ group, formType }) => {
       city: city,
       state: state,
       previewImage: imageUrl,
-     }
+    }
+
+    console.log("this is groupData:", groupData)
 
     let newGroup;
 
     if (formType === "Update Group") {
-      newGroup = await dispatch(updateExistingGroup(...group, ...groupData))
+      newGroup = await dispatch(updateExistingGroup({...group, ...groupData}))
     } else {
       newGroup = await dispatch(postNewGroup(groupData))
     }
 
     if (newGroup.id) {
-      history.push(`/reports/${newGroup.id}`);
+      history.push(`/groups/${newGroup.id}`);
     } else {
       const { errors } = await newGroup.json();
       setErrors(errors);
@@ -112,11 +108,16 @@ const GroupForm = ({ group, formType }) => {
           <input
             type="text"
             placeholder="City, STATE"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            onChange={(e) => {
+              const locationValue = e.target.value;
+              const [inputCity, inputState] = locationValue.split(',').map((part) => part.trim());
+              setCity(inputCity);
+              setState(inputState);
+            }}
           />
         </label>
-        {errors.location && <div className="errors">{errors.location}</div>}
+        {errors.city && <div className="errors">{errors.city}</div>}
+        {errors.state && <div className="errors">{errors.state}</div>}
       </div>
 
       <div className='name-instructions'>

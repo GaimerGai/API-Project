@@ -1,3 +1,5 @@
+import { csrfFetch } from "./csrf";
+
 /** Action Type Constants: */
 const LOAD_GROUPS = 'groups/loadGroups';
 const LOAD_GROUP = 'groups/loadGroup';
@@ -69,13 +71,15 @@ export const fetchEventsByGroupId = (groupId) => async dispatch => {
 }
 
 export const postNewGroup = (payload) => async (dispatch) => {
-  const response = await fetch(`/api/groups`, {
+  console.log("This is payload in the thunk:", payload)
+  const response = await csrfFetch(`/api/groups`, {
     method: "POST",
     headers: {"Content-Type":"application.json"},
     body: JSON.stringify(payload)
   });
 
   if (response.ok){
+    console.log(payload)
     const data = await response.json();
     dispatch(createGroup(data))
     return data;
