@@ -20,7 +20,7 @@ function GroupDetail() {
   const groupData = useSelector((state) => state.groups.currGroup);
   const eventData = useSelector((state) => state.groups.Events)
 
-
+  console.log("This is GROUPData:", groupData)
   console.log("This is eventData:", eventData)
 
   let isPrivate = '';
@@ -34,10 +34,6 @@ function GroupDetail() {
   const handleDelete = () => {
     dispatch(deleteSelectedGroup(groupData.id));
   };
-
-  const handleEdit = () => {
-    <Link to={`/groups/${groupData.id}/edit`}></Link>
-  }
 
   const now = new Date();
   const upcomingEvents = Object.values(eventData).filter((event) => new Date(event.startDate) > now)
@@ -63,7 +59,14 @@ function GroupDetail() {
             Organized by: {groupData.Organizer.firstName} {groupData.Organizer.lastName}
           </p>
           <button onClick={handleJoinGroup}>Join this group</button>
-          <button onClick={handleEdit}>Edit</button>
+          <button>
+              <Link to="/groups">Create An Event</Link>
+              </button>
+          <button>
+          <Link to={`/groups/${groupData.id}/edit`}>
+          Update
+          </Link>
+          </button>
           <button onClick={handleDelete}>Delete</button>
         </div>
         <div className="middleCard">

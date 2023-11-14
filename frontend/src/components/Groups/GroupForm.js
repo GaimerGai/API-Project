@@ -88,8 +88,12 @@ const GroupForm = ({ group, formType }) => {
           <input
             type="text"
             placeholder="City, STATE"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            value={`${city}, ${state}`}
+            onChange={(e) => {
+              const [newCity, newState] = e.target.value.split(', ');
+              setCity(newCity || '');
+              setState(newState || '');
+            }}
           />
         </label>
         {errors.location && <div className="errors">{errors.location}</div>}

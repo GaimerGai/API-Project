@@ -62,6 +62,11 @@ function ProfileButton({ user }) {
               </button>
             </li>
             <li>
+              <button>
+              <Link to="/groups/new">Create A Group</Link>
+              </button>
+            </li>
+            <li>
               <button onClick={logout}>Log Out</button>
             </li>
           </>
