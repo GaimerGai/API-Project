@@ -1,14 +1,20 @@
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { postNewGroup, updateExistingGroup } from '../../store/group';
 
 const GroupForm = ({ group, formType }) => {
   const dispatch = useDispatch();
   const history = useHistory();
+
+  const userData = useSelector((state) => state.session.user);
+  console.log("This is UserData: ", userData);
+
   const [location, setLocation] = useState(group?.location || '');
+  const [city, setCity] =  useState(group?.city || '');
+  const [state, setState] =  useState(group?.state || '');
   const [name, setName] = useState(group?.name || '');
-  const [description, setDescription] = useState(group?.description || '');
+  const [about, setAbout] = useState(group?.about || '');
   const [onlineStatus, setOnlineStatus] = useState(group?.onlineStatus || '');
   const [privacy, setPrivacy] = useState(group?.privacy || '');
   const [imageUrl, setImageUrl] = useState(group?.imageUrl || '');
@@ -23,12 +29,21 @@ const GroupForm = ({ group, formType }) => {
       newErrors.name = 'Name must be 60 characters or less';
     }
 
-    if (description.length < 30) {
-      newErrors.description = 'Description needs 30 or more characters';
+    if (about.length < 30) {
+      newErrors.about = 'About needs 30 or more characters';
     }
 
     if (!location.trim()) {
       newErrors.location = 'Location is required';
+    } else {
+      const [inputCity, inputState] = location.split(',').map((part) => part.trim())
+
+      if(!inputCity || !inputState){
+        newErrors.location = ('Please enter both city and state separated by a comma.');
+      }
+
+      setCity(inputCity)
+      setState(inputState)
     }
 
     if (!onlineStatus) {
@@ -55,14 +70,23 @@ const GroupForm = ({ group, formType }) => {
       return;
     }
 
-    group = { ...group, name, description, onlineStatus, privacy, imageUrl }
+    const groupData = {
+      organizerId: userData.id,
+      name: name,
+      about: about,
+      type: onlineStatus,
+      private: privacy,
+      city: city,
+      state: state,
+      previewImage: imageUrl,
+     }
 
     let newGroup;
 
     if (formType === "Update Group") {
-      newGroup = await dispatch(updateExistingGroup(group))
+      newGroup = await dispatch(updateExistingGroup(...group, ...groupData))
     } else {
-      newGroup = await dispatch(postNewGroup(group))
+      newGroup = await dispatch(postNewGroup(groupData))
     }
 
     if (newGroup.id) {
@@ -88,12 +112,8 @@ const GroupForm = ({ group, formType }) => {
           <input
             type="text"
             placeholder="City, STATE"
-            value={`${city}, ${state}`}
-            onChange={(e) => {
-              const [newCity, newState] = e.target.value.split(', ');
-              setCity(newCity || '');
-              setState(newState || '');
-            }}
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
           />
         </label>
         {errors.location && <div className="errors">{errors.location}</div>}
@@ -112,10 +132,9 @@ const GroupForm = ({ group, formType }) => {
           />
         </label>
         {errors.name && <div className="errors">{errors.name}</div>}
-        <div className="errors">{errors.description}</div>
       </div>
 
-      <div className='description-instructions'>
+      <div className='about-instructions'>
         <h2>Now describe what your group will be about</h2>
         <h3>People will see this when we promote your group, but you'll be able to add to it later, too</h3>
         <ol>
@@ -126,11 +145,11 @@ const GroupForm = ({ group, formType }) => {
         <label>
           <textarea
             placeholder="Please write at least 30 characters"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={about}
+            onChange={(e) => setAbout(e.target.value)}
           />
         </label>
-        {errors.description && <div className="errors">{errors.description}</div>}
+        {errors.about && <div className="errors">{errors.about}</div>}
       </div>
 
       <div className='statuses-and-url'>

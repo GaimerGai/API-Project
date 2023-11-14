@@ -328,6 +328,7 @@ router.get( //Get details of a Group from an id
           {
             model: Image,
             where: { imageableType: 'Group' },
+            required: false
           },
           {
             model: User,
