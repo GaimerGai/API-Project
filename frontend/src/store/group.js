@@ -74,7 +74,6 @@ export const postNewGroup = (payload) => async (dispatch) => {
   console.log("This is payload in the thunk:", payload)
   const response = await csrfFetch(`/api/groups`, {
     method: "POST",
-    headers: {"Content-Type":"application.json"},
     body: JSON.stringify(payload)
   });
 
@@ -88,9 +87,8 @@ export const postNewGroup = (payload) => async (dispatch) => {
 }
 
 export const updateExistingGroup = (payload) => async (dispatch) => {
-  const response = await fetch(`/api/groups/${payload.id}`, {
+  const response = await csrfFetch(`/api/groups/${payload.id}`, {
     method: "PUT",
-    headers: {"Content-Type":"application.json"},
     body: JSON.stringify(payload)
   });
 
@@ -103,7 +101,7 @@ export const updateExistingGroup = (payload) => async (dispatch) => {
 }
 
 export const deleteSelectedGroup = (groupId) => async (dispatch) => {
-  const res = await fetch(`/api/groups/${groupId}`, {
+  const res = await csrfFetch(`/api/groups/${groupId}`, {
       method: "DELETE",
   });
 
@@ -129,13 +127,13 @@ const groupsReducer = (state = { groups: {}, currGroup: {}, Events: {} }, action
 
     case CREATE_GROUP: {
       const groups = { ...state.groups }
-      groups[action.group.id] = action.group
+      groups[action.payload.id] = action.payload
       return { ...state, groups };
     }
 
     case UPDATE_GROUP: {
       const groups = { ...state.groups }
-      groups[action.group.id] = action.group
+      groups[action.payload.id] = action.payload
       return { ...state, groups };
     }
     case DELETE_GROUP:

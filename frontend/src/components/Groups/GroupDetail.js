@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGroupById, fetchEventsByGroupId, deleteSelectedGroup } from "../../store/group";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useHistory } from "react-router-dom";
 import { loremIpsum } from "../../App";
 
 
 
 function GroupDetail() {
+  const history = useHistory
   const { groupId } = useParams();
   const [isLoaded, setIsLoaded] = useState(false);
   const dispatch = useDispatch();
@@ -33,6 +34,7 @@ function GroupDetail() {
 
   const handleDelete = () => {
     dispatch(deleteSelectedGroup(groupData.id));
+    history.push(`/groups`)
   };
 
   const now = new Date();

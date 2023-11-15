@@ -64,12 +64,13 @@ const GroupForm = ({ group, formType }) => {
       return;
     }
 
+
     const groupData = {
       organizerId: userData.id,
       name: name,
       about: about,
       type: onlineStatus,
-      private: privacy,
+      private: privacy === 'private',
       city: city,
       state: state,
       previewImage: imageUrl,
@@ -164,8 +165,8 @@ const GroupForm = ({ group, formType }) => {
             <option value="" disabled>
               (Select One)
             </option>
-            <option value="online">Online</option>
-            <option value="inPerson">In Person</option>
+            <option value="Online">Online</option>
+            <option value="In person">In Person</option>
           </select>
         </label>
         {errors.onlineStatus && <div className="errors">{errors.onlineStatus}</div>}
