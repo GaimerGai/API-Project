@@ -2,8 +2,7 @@ import GroupForm from "./GroupForm";
 
 const CreateGroupForm = () => {
   const group = {
-    understanding: '',
-    improvement: '',
+
   };
 
   /* **DO NOT CHANGE THE RETURN VALUE** */

@@ -9,7 +9,6 @@ const GroupForm = ({ group, formType }) => {
 
   const userData = useSelector((state) => state.session.user);
 
-  // const [location, setLocation] = useState(group?.location || '');
   const [city, setCity] = useState(group?.city || '');
   const [state, setState] = useState(group?.state || '');
   const [name, setName] = useState(group?.name || '');
@@ -33,11 +32,11 @@ const GroupForm = ({ group, formType }) => {
     }
 
     if (!city.trim()) {
-      newErrors.city = 'Location is required';
+      newErrors.city = 'City is required';
     }
 
     if (!state.trim()) {
-      newErrors.city = 'Location is required';
+      newErrors.city = 'State is required';
     }
 
     if (!onlineStatus) {

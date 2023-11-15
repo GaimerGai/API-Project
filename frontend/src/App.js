@@ -14,6 +14,7 @@ import OpenModalMenuItem from "./components/Navigation/OpenModalMenuItem";
 import SignupFormModal from "./components/SignupFormModal";
 import Events from "./components/Events";
 import EventDetail from "./components/Events/EventDetail";
+import CreateEventForm from "./components/Events/CreateEventForm";
 
 export const loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit,sed do eiusmod tempor incididunt ut labore et dolore magnaaliqua. Ut enim ad minim veniam, quis nostrud exercitationullamco laboris nisi ut aliquip ex ea commodo consequat.Duis aute irure dolor in reprehenderit in voluptat evelit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
 
@@ -82,6 +83,7 @@ function App() {
           <Route exact path="/" />
           <Route exact path="/groups" component={Groups} />
           <Route exact path="/groups/new" component = {CreateGroupForm}/>
+          <Route exact path="/groups/:groupId/events/new" component = {CreateEventForm}/>
           <Route path="/groups/:groupId/edit" component={EditGroupForm}/>
           <Route exact path="/events" component={Events} />
           <Route path="/groups/:groupId" component={GroupDetail} />

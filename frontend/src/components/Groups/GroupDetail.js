@@ -7,7 +7,7 @@ import { loremIpsum } from "../../App";
 
 
 function GroupDetail() {
-  const history = useHistory
+  const history = useHistory();
   const { groupId } = useParams();
   const [isLoaded, setIsLoaded] = useState(false);
   const dispatch = useDispatch();
@@ -37,6 +37,11 @@ function GroupDetail() {
     history.push(`/groups`)
   };
 
+
+  const handleCreateEvent = () => {
+    history.push(`/groups/${groupId}/events/new`)
+  };
+
   const now = new Date();
   const upcomingEvents = Object.values(eventData).filter((event) => new Date(event.startDate) > now)
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));;
@@ -61,9 +66,7 @@ function GroupDetail() {
             Organized by: {groupData.Organizer.firstName} {groupData.Organizer.lastName}
           </p>
           <button onClick={handleJoinGroup}>Join this group</button>
-          <button>
-              <Link to="/groups">Create An Event</Link>
-              </button>
+          <button onClick={handleCreateEvent}>Create An Event</button>
           <button>
           <Link to={`/groups/${groupData.id}/edit`}>
           Update

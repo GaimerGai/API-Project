@@ -1,3 +1,4 @@
+import { csrfFetch } from "./csrf";
 /** Action Type Constants: */
 const LOAD_EVENTS = 'events/loadEvents';
 const LOAD_EVENT = 'events/loadEvent';
@@ -53,6 +54,48 @@ export const fetchEventById = (eventId) => async (dispatch) => {
   }
 }
 
+export const postNewEvent = (payload) => async (dispatch) => {
+  console.log("This is payload in the thunk:", payload)
+  const response = await csrfFetch(`/api/groups/${payload.groupId}/events`, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+
+  if (response.ok){
+    console.log("This is the payload if the response is ok:", payload)
+    const data = await response.json();
+    dispatch(createEvent(data))
+    return data;
+  }
+  return response;
+}
+
+export const updateExistingEvent = (payload) => async (dispatch) => {
+  const response = await csrfFetch(`/api/events/${payload.id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload)
+  });
+
+  if (response.ok){
+    const data = await response.json();
+    dispatch(updateEvent(data))
+    return data;
+  }
+  return response;
+}
+
+export const deleteSelectedEvent = (eventId) => async (dispatch) => {
+  const res = await csrfFetch(`/api/event/${eventId}`, {
+      method: "DELETE",
+  });
+
+  if (res.ok) {
+      const data = await res.json();
+      dispatch(deleteEvent(eventId));
+      return data;
+  }
+  return res;
+};
 
 const eventsReducer = (state = { events: {}, currEvent: {} }, action) => {
   switch (action.type) {
@@ -68,13 +111,13 @@ const eventsReducer = (state = { events: {}, currEvent: {} }, action) => {
 
     case CREATE_EVENT: {
       const events = { ...state.events }
-      events[action.event.id] = action.event
+      events[action.payload.id] = action.payload
       return { ...state, events };
     }
 
     case UPDATE_EVENT: {
       const events = { ...state.events }
-      events[action.event.id] = action.event
+      events[action.payload.id] = action.payload
       return { ...state, events };
     }
     case DELETE_EVENT:
