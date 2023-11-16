@@ -120,10 +120,12 @@ const eventsReducer = (state = { events: {}, currEvent: {} }, action) => {
       events[action.payload.id] = action.payload
       return { ...state, events };
     }
-    case DELETE_EVENT:
+
+    case DELETE_EVENT:{
       const newState = { ...state };
       delete newState[action.eventId];
       return newState;
+    }
 
     default:
       return state;

@@ -136,11 +136,12 @@ const groupsReducer = (state = { groups: {}, currGroup: {}, Events: {} }, action
       groups[action.payload.id] = action.payload
       return { ...state, groups };
     }
-    
-    case DELETE_GROUP:
+
+    case DELETE_GROUP:{
       const newState = { ...state };
       delete newState[action.groupId];
       return newState;
+    }
 
     case GET_EVENT_BY_GROUP:{
       let event = {...state.Events}

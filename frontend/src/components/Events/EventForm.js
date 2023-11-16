@@ -15,7 +15,6 @@ const EventForm = ({ event, formType }) => {
   const [name, setName] = useState(event?.name || '');
   const [about, setAbout] = useState(event?.about || '');
   const [onlineStatus, setOnlineStatus] = useState(event?.onlineStatus || '');
-  const [privacy, setPrivacy] = useState(event?.privacy || '');
   const [price, setPrice] = useState(event?.price ||  '');
   const [startTime, setStartTime] = useState(event?.startTime || '');
   const [endTime, setEndTime] = useState(event?.endTime || '');
@@ -46,10 +45,6 @@ const EventForm = ({ event, formType }) => {
       newErrors.onlineStatus = "Please select an option for Online Status";
     }
 
-    if (!privacy) {
-      newErrors.privacy = "Please select an option for Privacy";
-    }
-
     if (!price.trim()){
       newErrors.price = "Please select a price"
     }
@@ -72,18 +67,25 @@ const EventForm = ({ event, formType }) => {
 
 
     const eventData = {
-      organizerId: userData.id,
+      groupId: groupData.id,
+      venueId: 1,
       name: name,
-      about: about,
       type: onlineStatus,
-      private: privacy === 'private',
+      capacity: 100,
       price:price,
+      description: about,
+      hostFirstName: userData.firstName,
+      hostLastName: userData.lastName,
+      startDate: startTime,
+      endDate:endTime,
       previewImage: imageUrl,
     }
 
     console.log("this is eventData:", eventData)
 
     let newEvent;
+
+    console.log("This is formType: ", formType)
 
     if (formType === "Update Event") {
       newEvent = await dispatch(updateExistingEvent({...event, ...eventData}))
@@ -92,7 +94,7 @@ const EventForm = ({ event, formType }) => {
     }
 
     if (newEvent.id) {
-      history.push(`/groups/${newEvent.id}`);
+      history.push(`/events/${newEvent.id}`);
     } else {
       const { errors } = await newEvent.json();
       setErrors(errors);
@@ -103,7 +105,7 @@ const EventForm = ({ event, formType }) => {
   return (
     <form onSubmit={handleSubmit}>
       <div className='name-instructions'>
-      <h3>Create an Event for {}</h3>
+      <h3>Create an Event for {groupData.name}</h3>
         <h2>What is the name of your event</h2>
         <label>
           <input
@@ -132,27 +134,12 @@ const EventForm = ({ event, formType }) => {
         </label>
         {errors.onlineStatus && <div className="errors">{errors.onlineStatus}</div>}
 
-        <h3>Is this event private or public</h3>
-        <label>
-          <select
-            value={privacy}
-            onChange={(e) => setPrivacy(e.target.value)}
-          >
-            <option value="" disabled>
-              (Select One)
-            </option>
-            <option value="private">Private</option>
-            <option value="public">Public</option>
-          </select>
-        </label>
-        {errors.privacy && <div className="errors">{errors.privacy}</div>}
-
         <h3>What is the price for your event?</h3>
         <label>
           <input
             type="text"
             placeholder="$    0"
-            value={name}
+            value={price}
             onChange={(e) => setPrice(e.target.value)}
           />
         </label>

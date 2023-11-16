@@ -83,13 +83,13 @@ module.exports = (sequelize, DataTypes) => {
     price: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
-      validate: {
-        isValidPrice(value) {
-          if (value <= 0) {
-            throw new Error('Price is invalid')
-          }
-        }
-      },
+      // validate: {
+      //   isValidPrice(value) {
+      //     if (value <= 0) {
+      //       throw new Error('Price is invalid')
+      //     }
+      //   }
+      // },
     },
     description: {
       type: DataTypes.STRING,

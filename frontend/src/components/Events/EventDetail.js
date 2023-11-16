@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchEventById } from "../../store/event";
+import { deleteSelectedEvent, fetchEventById } from "../../store/event";
 import { fetchGroupById } from "../../store/group";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useHistory } from "react-router-dom";
 
 
 
@@ -10,6 +10,7 @@ function EventDetail() {
   const { eventId } = useParams();
   const [isLoaded, setIsLoaded] = useState(false);
   const dispatch = useDispatch();
+  const history = useHistory();
 
   const eventData = useSelector((state) => state.events.currEvent);
   const groupData = useSelector((state) => state.groups.currGroup)
@@ -27,6 +28,11 @@ function EventDetail() {
 
     fetchData();
   }, [dispatch, eventId, eventData.groupId]);
+
+  const handleDelete =  () => {
+    dispatch(deleteSelectedEvent(eventData.id));
+    history.push(`/event`)
+  };
 
 
 
@@ -61,6 +67,12 @@ function EventDetail() {
           <p>End Date: {eventData.endDate.toLocaleString()}</p>
           <p>Price: ${eventData.price}</p>
           <p>{eventData.type === "In person" ? "In Person" : "Online"} Event</p>
+          <button>
+          <Link to={`/events/${eventData.id}/edit`}>
+          Update
+          </Link>
+          </button>
+          <button onClick={handleDelete}>Delete</button>
           </div>
         </div>
         <div className="bottomcard">{eventData.description}</div>

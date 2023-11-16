@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchEventById } from "../../store/event";
 import { useEffect } from "react";
-import EventForm from "./CreateEventForm";
+import EventForm from "./EventForm";
 
 const EditEventForm = () => {
     const dispatch = useDispatch();
