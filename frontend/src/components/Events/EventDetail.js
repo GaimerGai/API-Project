@@ -62,8 +62,8 @@ function EventDetail() {
             <p>{groupData.isPublic ? "Public Group" : "Private Group"}</p>
           </div>
           <div className="eventinfocard">
-            <p>Start Date: {eventData.startDate.toLocaleString()}</p>
-            <p>End Date: {eventData.endDate.toLocaleString()}</p>
+            <p>Start Date: {new Date(eventData.startDate).toLocaleString()}</p>
+            <p>End Date: {new Date(eventData.endDate).toLocaleString()}</p>
             <p>Price: ${eventData.price}</p>
             <p>{eventData.type === "In person" ? "In Person" : "Online"} Event</p>
             <button>

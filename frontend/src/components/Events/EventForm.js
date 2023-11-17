@@ -15,7 +15,7 @@ const EventForm = ({ event, formType }) => {
   const [name, setName] = useState(event?.name || '');
   const [about, setAbout] = useState(event?.about || '');
   const [onlineStatus, setOnlineStatus] = useState(event?.onlineStatus || '');
-  const [price, setPrice] = useState(event?.price ||  '');
+  const [price, setPrice] = useState(event?.price || '');
   const [startTime, setStartTime] = useState(event?.startTime || '');
   const [endTime, setEndTime] = useState(event?.endTime || '');
   const [imageUrl, setImageUrl] = useState(event?.imageUrl || '');
@@ -30,6 +30,9 @@ const EventForm = ({ event, formType }) => {
   const validateForm = () => {
     const newErrors = {};
 
+    const startTimeDate = new Date(startTime);
+    const endTimeDate = new Date(endTime);
+
     if (!name.trim()) {
       newErrors.name = 'Name is required';
     } else if (name.length > 60) {
@@ -40,12 +43,16 @@ const EventForm = ({ event, formType }) => {
       newErrors.about = 'About needs 30 or more characters';
     }
 
+    if (startTimeDate >= endTimeDate) {
+      newErrors.startTime = 'Start time must be before end time';
+      newErrors.endTime = 'End time must be after start time';
+    }
 
     if (!onlineStatus) {
       newErrors.onlineStatus = "Please select an option for Online Status";
     }
 
-    if (!price.trim()){
+    if (!price.trim()) {
       newErrors.price = "Please select a price"
     }
 
@@ -65,6 +72,25 @@ const EventForm = ({ event, formType }) => {
       return;
     }
 
+    const parseTimeDateString = (dateTimeString) => {
+      const [datePart, timePart, ampm] = dateTimeString.split(' ');
+      const [month, day, year] = datePart.split('/')
+      const [hours, minutes] = timePart.split(/:| /);
+      if (!ampm) {
+        const lastChar = hours.slice(-2).toUpperCase();
+        if (lastChar === 'AM' || lastChar === 'PM') {
+          ampm = lastChar;
+          hours = hours.slice(0, -2);
+        }
+      }
+      const militaryHours = ampm.toUpperCase() === 'PM' ? parseInt(hours, 10) + 12 : parseInt(hours, 10);
+      const parsedDate = new Date(year, month -1, day, militaryHours, minutes);
+      return parsedDate;
+    }
+
+    const startTimeDate = parseTimeDateString((startTime));
+    const endTimeDate = parseTimeDateString((endTime));
+
 
     const eventData = {
       groupId: groupData.id,
@@ -72,23 +98,19 @@ const EventForm = ({ event, formType }) => {
       name: name,
       type: onlineStatus,
       capacity: 100,
-      price:price,
+      price: price,
       description: about,
       hostFirstName: userData.firstName,
       hostLastName: userData.lastName,
-      startDate: startTime,
-      endDate:endTime,
+      startDate: startTimeDate,
+      endDate: endTimeDate,
       previewImage: imageUrl,
     }
 
-    console.log("this is eventData:", eventData)
-
     let newEvent;
 
-    console.log("This is formType: ", formType)
-
     if (formType === "Update Event") {
-      newEvent = await dispatch(updateExistingEvent({...event, ...eventData}))
+      newEvent = await dispatch(updateExistingEvent({ ...event, ...eventData }))
     } else {
       newEvent = await dispatch(postNewEvent(eventData))
     }
@@ -105,7 +127,7 @@ const EventForm = ({ event, formType }) => {
   return (
     <form onSubmit={handleSubmit}>
       <div className='name-instructions'>
-      <h3>Create an Event for {groupData.name}</h3>
+        <h3>Create an Event for {groupData.name}</h3>
         <h2>What is the name of your event</h2>
         <label>
           <input
@@ -144,9 +166,9 @@ const EventForm = ({ event, formType }) => {
           />
         </label>
         {errors.privacy && <div className="errors">{errors.privacy}</div>}
-        </div>
+      </div>
 
-        <div className='times'>
+      <div className='times'>
         <h3>When does your event start?</h3>
         <label>
           <input
@@ -168,9 +190,9 @@ const EventForm = ({ event, formType }) => {
           />
         </label>
         {errors.endTime && <div className="errors">{errors.endTime}</div>}
-        </div>
+      </div>
 
-        <div className='imageUrl'>
+      <div className='imageUrl'>
         <h3>Please add in image url for your group below:</h3>
         <label>
           <input

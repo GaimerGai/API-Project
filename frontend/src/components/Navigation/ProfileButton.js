@@ -5,6 +5,7 @@ import OpenModalMenuItem from './OpenModalMenuItem';
 import LoginFormModal from '../LoginFormModal';
 import SignupFormModal from '../SignupFormModal';
 import { Link} from "react-router-dom";
+import "./Navigation.css"
 
 function ProfileButton({ user }) {
   const dispatch = useDispatch();
@@ -41,6 +42,7 @@ function ProfileButton({ user }) {
   const ulClassName = "profile-dropdown" + (showMenu ? "" : " hidden");
 
   return (
+      <div className="profile-button-complete">
     <>
       <button onClick={openMenu}>
         <i className="fas fa-user-circle" />
@@ -87,6 +89,7 @@ function ProfileButton({ user }) {
       </ul>
       }
     </>
+      </div>
   );
 }
 
