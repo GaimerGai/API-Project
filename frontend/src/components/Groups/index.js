@@ -19,6 +19,7 @@ function Groups() {
   return (
     <div>
       <h2><Link to="/events">Events   </Link>Groups</h2>
+      <h3>Groups in Meetup</h3>
       <ul>
         {Object.values(groups).map((group) => (
             <Link to={`/groups/${group.id}`}>{<GroupIndexItem

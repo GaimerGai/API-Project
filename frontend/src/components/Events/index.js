@@ -19,6 +19,7 @@ function Events() {
   return (
     <div>
       <h2>Events   <Link to="/groups">Groups</Link></h2>
+      <h3>Events in Meetup</h3>
       <ul>
         {Object.values(events).map((event) => (
             <Link to={`/events/${event.id}`}>{<EventIndexItem

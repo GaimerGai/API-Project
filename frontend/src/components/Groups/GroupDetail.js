@@ -4,6 +4,7 @@ import { fetchGroupById, fetchEventsByGroupId, deleteSelectedGroup } from "../..
 import { Link, useParams, useHistory } from "react-router-dom";
 import { loremIpsum } from "../../App";
 import DeleteConfirmationModal from "../DeleteConfirmationModal";
+import './GroupDetail.css'
 
 
 
@@ -78,7 +79,7 @@ function GroupDetail() {
           <p>
             Organized by: {groupData.Organizer.firstName} {groupData.Organizer.lastName}
           </p>
-          <button onClick={handleJoinGroup}>Join this group</button>
+          <button className="join-group-button" onClick={handleJoinGroup}>Join this group</button>
           <button onClick={handleCreateEvent}>Create An Event</button>
           <button>
           <Link to={`/groups/${groupData.id}/edit`}>

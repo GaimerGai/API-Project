@@ -85,7 +85,7 @@ export const updateExistingEvent = (payload) => async (dispatch) => {
 }
 
 export const deleteSelectedEvent = (eventId) => async (dispatch) => {
-  const res = await csrfFetch(`/api/event/${eventId}`, {
+  const res = await csrfFetch(`/api/events/${eventId}`, {
       method: "DELETE",
   });
 
@@ -123,7 +123,10 @@ const eventsReducer = (state = { events: {}, currEvent: {} }, action) => {
 
     case DELETE_EVENT:{
       const newState = { ...state };
+      console.log("This is newState:",newState)
       delete newState[action.eventId];
+      console.log("This is the action", action)
+      console.log("This is newState:",newState)
       return newState;
     }
 

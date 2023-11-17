@@ -30,8 +30,9 @@ const EventForm = ({ event, formType }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    const startTimeDate = new Date(startTime);
-    const endTimeDate = new Date(endTime);
+
+    const startTimeDate = new Date(startTime).getTime() ;
+    const endTimeDate = new Date(endTime).getTime();
 
     if (!name.trim()) {
       newErrors.name = 'Name is required';
@@ -72,24 +73,6 @@ const EventForm = ({ event, formType }) => {
       return;
     }
 
-    const parseTimeDateString = (dateTimeString) => {
-      const [datePart, timePart, ampm] = dateTimeString.split(' ');
-      const [month, day, year] = datePart.split('/')
-      const [hours, minutes] = timePart.split(/:| /);
-      if (!ampm) {
-        const lastChar = hours.slice(-2).toUpperCase();
-        if (lastChar === 'AM' || lastChar === 'PM') {
-          ampm = lastChar;
-          hours = hours.slice(0, -2);
-        }
-      }
-      const militaryHours = ampm.toUpperCase() === 'PM' ? parseInt(hours, 10) + 12 : parseInt(hours, 10);
-      const parsedDate = new Date(year, month -1, day, militaryHours, minutes);
-      return parsedDate;
-    }
-
-    const startTimeDate = parseTimeDateString((startTime));
-    const endTimeDate = parseTimeDateString((endTime));
 
 
     const eventData = {
@@ -102,8 +85,8 @@ const EventForm = ({ event, formType }) => {
       description: about,
       hostFirstName: userData.firstName,
       hostLastName: userData.lastName,
-      startDate: startTimeDate,
-      endDate: endTimeDate,
+      startDate: startTime,
+      endDate: endTime,
       previewImage: imageUrl,
     }
 
@@ -172,9 +155,10 @@ const EventForm = ({ event, formType }) => {
         <h3>When does your event start?</h3>
         <label>
           <input
-            type="text"
+            type="datetime-local"
             placeholder="MM/DD/YYYY HH:mm AM"
             value={startTime}
+            min={new Date()}
             onChange={(e) => setStartTime(e.target.value)}
           />
         </label>
@@ -183,9 +167,10 @@ const EventForm = ({ event, formType }) => {
         <h3>When does your event end?</h3>
         <label>
           <input
-            type="text"
+            type="datetime-local"
             placeholder="MM/DD/YYYY HH:mm PM"
             value={endTime}
+            min={startTime}
             onChange={(e) => setEndTime(e.target.value)}
           />
         </label>

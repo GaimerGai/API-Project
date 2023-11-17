@@ -34,8 +34,8 @@ function EventDetail() {
     setShowDeleteModal(true);
   };
 
-  const handleDeleteConfirm = () => {
-    dispatch(deleteSelectedEvent(eventData.id));
+  const handleDeleteConfirm = async () => {
+    await dispatch(deleteSelectedEvent(eventData.id));
     history.push(`/events`);
     setShowDeleteModal(false);
   };

@@ -27,8 +27,8 @@ const GroupForm = ({ group, formType }) => {
       newErrors.name = 'Name must be 60 characters or less';
     }
 
-    if (about.length < 30) {
-      newErrors.about = 'About needs 30 or more characters';
+    if (about.length < 50) {
+      newErrors.about = 'About needs 50 or more characters';
     }
 
     if (!city.trim()) {

@@ -1,5 +1,6 @@
 const EventIndexItem = ({event}) => {
 
+  console.log("This is event: ", event)
 
   return(
     <section>
