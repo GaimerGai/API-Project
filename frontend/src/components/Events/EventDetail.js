@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteSelectedEvent, fetchEventById } from "../../store/event";
 import { fetchGroupById } from "../../store/group";
 import { Link, useParams, useHistory } from "react-router-dom";
-
-
+import DeleteConfirmationModal from "../DeleteConfirmationModal";
 
 function EventDetail() {
   const { eventId } = useParams();
@@ -13,7 +12,9 @@ function EventDetail() {
   const history = useHistory();
 
   const eventData = useSelector((state) => state.events.currEvent);
-  const groupData = useSelector((state) => state.groups.currGroup)
+  const groupData = useSelector((state) => state.groups.currGroup);
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,21 +30,19 @@ function EventDetail() {
     fetchData();
   }, [dispatch, eventId, eventData.groupId]);
 
-  const handleDelete =  () => {
-    dispatch(deleteSelectedEvent(eventData.id));
-    history.push(`/event`)
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
   };
 
+  const handleDeleteConfirm = () => {
+    dispatch(deleteSelectedEvent(eventData.id));
+    history.push(`/events`);
+    setShowDeleteModal(false);
+  };
 
-
-  console.log("This is eventData:", eventData)
-  console.log("This is groupData:", groupData)
-
-
-  let isPrivate = '';
-  if (eventData.private) isPrivate = 'Private';
-  if (!eventData.private) isPrivate = 'Public'
-
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+  };
 
   return (
     isLoaded && (
@@ -63,19 +62,26 @@ function EventDetail() {
             <p>{groupData.isPublic ? "Public Group" : "Private Group"}</p>
           </div>
           <div className="eventinfocard">
-          <p>Start Date: {eventData.startDate.toLocaleString()}</p>
-          <p>End Date: {eventData.endDate.toLocaleString()}</p>
-          <p>Price: ${eventData.price}</p>
-          <p>{eventData.type === "In person" ? "In Person" : "Online"} Event</p>
-          <button>
-          <Link to={`/events/${eventData.id}/edit`}>
-          Update
-          </Link>
-          </button>
-          <button onClick={handleDelete}>Delete</button>
+            <p>Start Date: {eventData.startDate.toLocaleString()}</p>
+            <p>End Date: {eventData.endDate.toLocaleString()}</p>
+            <p>Price: ${eventData.price}</p>
+            <p>{eventData.type === "In person" ? "In Person" : "Online"} Event</p>
+            <button>
+              <Link to={`/events/${eventData.id}/edit`}>
+                Update
+              </Link>
+            </button>
+            <button onClick={handleDeleteClick}>Delete</button>
           </div>
         </div>
         <div className="bottomcard">{eventData.description}</div>
+        {showDeleteModal && (
+          <DeleteConfirmationModal
+            onConfirm={handleDeleteConfirm}
+            onCancel={handleDeleteCancel}
+            itemName={eventData.name}
+          />
+        )}
       </div>
     )
   );

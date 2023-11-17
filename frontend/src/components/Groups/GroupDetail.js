@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchGroupById, fetchEventsByGroupId, deleteSelectedGroup } from "../../store/group";
 import { Link, useParams, useHistory } from "react-router-dom";
 import { loremIpsum } from "../../App";
+import DeleteConfirmationModal from "../DeleteConfirmationModal";
 
 
 
@@ -11,6 +12,7 @@ function GroupDetail() {
   const { groupId } = useParams();
   const [isLoaded, setIsLoaded] = useState(false);
   const dispatch = useDispatch();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     dispatch(fetchGroupById(groupId))
@@ -20,6 +22,7 @@ function GroupDetail() {
 
   const groupData = useSelector((state) => state.groups.currGroup);
   const eventData = useSelector((state) => state.groups.Events)
+
 
   console.log("This is GROUPData:", groupData)
   console.log("This is eventData:", eventData)
@@ -32,9 +35,18 @@ function GroupDetail() {
     alert("Feature Coming Soon");
   };
 
-  const handleDelete = () => {
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = () => {
     dispatch(deleteSelectedGroup(groupData.id));
-    history.push(`/groups`)
+    history.push(`/groups`);
+    setShowDeleteModal(false);
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
   };
 
 
@@ -58,6 +70,7 @@ function GroupDetail() {
         </div>
         <div className="topCard">
           <h2>{groupData.name}</h2>
+          <img src={groupData.previewImage} alt="Group Preview" />
           <h3>
             {groupData.city}, {groupData.state}
           </h3>
@@ -72,8 +85,15 @@ function GroupDetail() {
           Update
           </Link>
           </button>
-          <button onClick={handleDelete}>Delete</button>
+          <button onClick={handleDeleteClick}>Delete</button>
         </div>
+        {showDeleteModal && (
+          <DeleteConfirmationModal
+            onConfirm={handleDeleteConfirm}
+            onCancel={handleDeleteCancel}
+            itemName={groupData.name}
+          />
+        )}
         <div className="middleCard">
           <h2>Organizer</h2>
           <p>{groupData.Organizer.firstName} {groupData.Organizer.lastName}</p>
