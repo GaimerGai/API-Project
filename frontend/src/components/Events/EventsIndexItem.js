@@ -15,7 +15,7 @@ const EventIndexItem = ({event}) => {
           hour12: false,
       }).replace(" ", " * ").replace(',','')}</h3>
       <h1>{event.name}</h1>
-      <h3>{event.Group.city} * {event.Group.state}</h3>
+      <h3>{event.Group.city},{event.Group.state}</h3>
       <p>{event.description}</p>
       </div>
     </section>

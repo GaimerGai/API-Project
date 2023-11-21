@@ -14,6 +14,7 @@ function GroupDetail() {
   const [isLoaded, setIsLoaded] = useState(false);
   const dispatch = useDispatch();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const session = useSelector((state) => state.session)
 
   useEffect(() => {
     dispatch(fetchGroupById(groupId))
@@ -79,7 +80,11 @@ function GroupDetail() {
           <p>
             Organized by: {groupData.Organizer.firstName} {groupData.Organizer.lastName}
           </p>
-          <button className="join-group-button" onClick={handleJoinGroup}>Join this group</button>
+          {
+            (session.user?.id !== groupData.Organizer.id && session.user) &&(
+              <button className="join-group-button" onClick={handleJoinGroup}>Join this group</button>
+            )
+          }
           <button onClick={handleCreateEvent}>Create An Event</button>
           <button>
           <Link to={`/groups/${groupData.id}/edit`}>

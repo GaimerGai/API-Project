@@ -122,12 +122,9 @@ const eventsReducer = (state = { events: {}, currEvent: {} }, action) => {
     }
 
     case DELETE_EVENT:{
-      const newState = { ...state };
-      console.log("This is newState:",newState)
-      delete newState[action.eventId];
-      console.log("This is the action", action)
-      console.log("This is newState:",newState)
-      return newState;
+        const events = { ...state.events };
+        delete events[action.event];
+        return { ...state, events }
     }
 
     default:

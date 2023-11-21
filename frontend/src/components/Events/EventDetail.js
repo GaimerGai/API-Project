@@ -2,6 +2,7 @@ import React, { useState, useEffect} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteSelectedEvent, fetchEventById } from "../../store/event";
 import { fetchGroupById } from "../../store/group";
+import { fetchEvents } from "../../store/event";
 import { Link, useParams, useHistory } from "react-router-dom";
 import DeleteConfirmationModal from "../DeleteConfirmationModal";
 

@@ -55,7 +55,7 @@ function ProfileButton({ user }) {
             <li>{user.email}</li>
             <li>
               <button>
-              <Link to="/groups">See All Groups</Link>
+              <Link to="/groups">View Groups</Link>
               </button>
             </li>
             <li>

@@ -10,7 +10,7 @@ const GroupIndexItem = ({ group }) => {
         <h1>{group.name}</h1>
         <h3>{group.city},{group.state}</h3>
         <p>{group.about}</p>
-        <p>{group.numEvents} * {isPrivate} </p>
+        <p>{group.numEvents} {"\u00b7"} {isPrivate} </p>
       </div>
     </section>
   )
