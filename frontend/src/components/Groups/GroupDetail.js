@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchGroupById, fetchEventsByGroupId, deleteSelectedGroup } from "../../store/group";
+import { fetchGroupById, fetchEventsByGroupId} from "../../store/group";
 import { Link, useParams, useHistory } from "react-router-dom";
 import { loremIpsum } from "../../App";
 import DeleteConfirmationModal from "../DeleteConfirmationModal";
 import './GroupDetail.css'
+import OpenModalMenuItem from "../Navigation/OpenModalMenuItem";
 
 
 
@@ -13,8 +14,15 @@ function GroupDetail() {
   const { groupId } = useParams();
   const [isLoaded, setIsLoaded] = useState(false);
   const dispatch = useDispatch();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const session = useSelector((state) => state.session)
+  const [showMenu, setShowMenu] = useState(false);
+  const ulRef = useRef();
+
+  const closeMenu = (e) => {
+    if (!ulRef.current?.contains(e.target)) {
+      setShowMenu(false);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchGroupById(groupId))
@@ -37,19 +45,6 @@ function GroupDetail() {
     alert("Feature Coming Soon");
   };
 
-  const handleDeleteClick = () => {
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    dispatch(deleteSelectedGroup(groupData.id));
-    history.push(`/groups`);
-    setShowDeleteModal(false);
-  };
-
-  const handleDeleteCancel = () => {
-    setShowDeleteModal(false);
-  };
 
 
   const handleCreateEvent = () => {
@@ -91,15 +86,14 @@ function GroupDetail() {
           Update
           </Link>
           </button>
-          <button onClick={handleDeleteClick}>Delete</button>
-        </div>
-        {showDeleteModal && (
-          <DeleteConfirmationModal
-            onConfirm={handleDeleteConfirm}
-            onCancel={handleDeleteCancel}
-            itemName={groupData.name}
+          <button>
+          <OpenModalMenuItem
+          itemText="Delete"
+          onItemClick={closeMenu}
+          modalComponent={<DeleteConfirmationModal entityType='group'/>}
           />
-        )}
+          </button>
+        </div>
         <div className="middleCard">
           <h2>Organizer</h2>
           <p>{groupData.Organizer.firstName} {groupData.Organizer.lastName}</p>

@@ -1,21 +1,27 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect, useRef} from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteSelectedEvent, fetchEventById } from "../../store/event";
+import { fetchEventById } from "../../store/event";
 import { fetchGroupById } from "../../store/group";
-import { fetchEvents } from "../../store/event";
-import { Link, useParams, useHistory } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import DeleteConfirmationModal from "../DeleteConfirmationModal";
+import OpenModalMenuItem from "../Navigation/OpenModalMenuItem";
 
 function EventDetail() {
   const { eventId } = useParams();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const dispatch = useDispatch();
-  const history = useHistory();
+  const ulRef = useRef();
 
   const eventData = useSelector((state) => state.events.currEvent);
   const groupData = useSelector((state) => state.groups.currGroup);
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const closeMenu = (e) => {
+    if (!ulRef.current?.contains(e.target)) {
+      setShowMenu(false);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,19 +37,19 @@ function EventDetail() {
     fetchData();
   }, [dispatch, eventId, eventData.groupId]);
 
-  const handleDeleteClick = () => {
-    setShowDeleteModal(true);
-  };
+  // const handleDeleteClick = () => {
+  //   setShowDeleteModal(true);
+  // };
 
-  const handleDeleteConfirm = async () => {
-    await dispatch(deleteSelectedEvent(eventData.id));
-    history.push(`/events`);
-    setShowDeleteModal(false);
-  };
+  // const handleDeleteConfirm = async () => {
+  //   await dispatch(deleteSelectedEvent(eventData.id));
+  //   history.push(`/events`);
+  //   setShowDeleteModal(false);
+  // };
 
-  const handleDeleteCancel = () => {
-    setShowDeleteModal(false);
-  };
+  // const handleDeleteCancel = () => {
+  //   setShowDeleteModal(false);
+  // };
 
   return (
     isLoaded && (
@@ -72,17 +78,16 @@ function EventDetail() {
                 Update
               </Link>
             </button>
-            <button onClick={handleDeleteClick}>Delete</button>
+            <button>
+              <OpenModalMenuItem
+              itemText="Delete"
+              onItemClick={closeMenu}
+              modalComponent={<DeleteConfirmationModal entityType='event'/>}
+              />
+            </button>
           </div>
         </div>
         <div className="bottomcard">{eventData.description}</div>
-        {showDeleteModal && (
-          <DeleteConfirmationModal
-            onConfirm={handleDeleteConfirm}
-            onCancel={handleDeleteCancel}
-            itemName={eventData.name}
-          />
-        )}
       </div>
     )
   );

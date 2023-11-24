@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
 import { postNewGroup, updateExistingGroup } from '../../store/group';
@@ -8,15 +8,23 @@ const GroupForm = ({ group, formType }) => {
   const history = useHistory();
 
   const userData = useSelector((state) => state.session.user);
+  console.log("This is userData", userData)
 
   const [city, setCity] = useState(group?.city || '');
   const [state, setState] = useState(group?.state || '');
   const [name, setName] = useState(group?.name || '');
   const [about, setAbout] = useState(group?.about || '');
-  const [onlineStatus, setOnlineStatus] = useState(group?.onlineStatus || '');
-  const [privacy, setPrivacy] = useState(group?.privacy || '');
-  const [imageUrl, setImageUrl] = useState(group?.imageUrl || '');
+  const [onlineStatus, setOnlineStatus] = useState(group?.type || '');
+  const [privacy, setPrivacy] = useState(group?.private === false ? 'true' : 'false' || '')
+  const [imageUrl, setImageUrl] = useState(group?.GroupImages[0].url || '');
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (!userData || (formType === 'Update Group' && (group.organizerId !== userData.id))){
+      history.push('/')
+    }
+  }, [])
+
 
   const validateForm = () => {
     const newErrors = {};
@@ -36,7 +44,7 @@ const GroupForm = ({ group, formType }) => {
     }
 
     if (!state.trim()) {
-      newErrors.city = 'State is required';
+      newErrors.state = 'State is required';
     }
 
     if (!onlineStatus) {
@@ -80,7 +88,7 @@ const GroupForm = ({ group, formType }) => {
     let newGroup;
 
     if (formType === "Update Group") {
-      newGroup = await dispatch(updateExistingGroup({...group, ...groupData}))
+      newGroup = await dispatch(updateExistingGroup({ ...group, ...groupData }))
     } else {
       newGroup = await dispatch(postNewGroup(groupData))
     }
@@ -96,8 +104,17 @@ const GroupForm = ({ group, formType }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h3>Become an Organizer</h3>
-      <h2>We'll walk you through a few steps to build your local community</h2>
+      {formType === "Update Group" ? (
+        <>
+          <h1>Update your Group</h1>
+          <h2>Lets Make some changes</h2>
+        </>
+      ) : (
+        <>
+          <h1>Become an Organizer</h1>
+          <h2>We'll walk you through a few steps to build your local community</h2>
+        </>
+      )}
 
 
       <div className='location-instructions'>
@@ -108,6 +125,7 @@ const GroupForm = ({ group, formType }) => {
           <input
             type="text"
             placeholder="City, STATE"
+            value={`${city}, ${state}`}
             onChange={(e) => {
               const locationValue = e.target.value;
               const [inputCity, inputState] = locationValue.split(',').map((part) => part.trim());
@@ -197,7 +215,11 @@ const GroupForm = ({ group, formType }) => {
         {errors.imageUrl && <div className="errors">{errors.imageUrl}</div>}
       </div>
 
-      <button type="submit">Create Group</button>
+      {formType === "Update Group" ? (
+        <button type="submit">Update Group</button>
+      ) : (
+        <button type="submit">Create Group</button>
+      )}
     </form>
   );
 };

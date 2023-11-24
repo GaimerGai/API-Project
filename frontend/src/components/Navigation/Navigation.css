@@ -2,3 +2,11 @@
 .profile-button-complete{
   float: right;
 }
+
+.navigation-button{
+  cursor:default;
+}
+
+.navigation-button:hover{
+  cursor: pointer;
+}
