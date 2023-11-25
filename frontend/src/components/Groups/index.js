@@ -20,12 +20,12 @@ function Groups() {
     <div className="container-wrapper">
       <div className="header-links">
         <h2>
-          <Link to="/events" className="event-link">
+          <Link to="/events" className="event-link-on-group-page">
             Events
           </Link>
         </h2>
         <h2>
-          <Link to="/groups" className="group-link">
+          <Link to="/groups" className="group-link-on-group-page">
             Groups
           </Link>
         </h2>
@@ -50,4 +50,3 @@ function Groups() {
 }
 
 export default Groups;
-

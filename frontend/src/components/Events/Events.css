@@ -1,8 +1,3 @@
-
-body {
-  margin: 0;
-}
-
 .container-wrapper {
   display: flex;
   flex-direction: column;
@@ -12,12 +7,12 @@ body {
 
 .header-links {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
   margin-bottom: 20px;
 }
 
-.group-container {
+.event-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,13 +21,13 @@ body {
   width: 30%;
 }
 
-.group-list {
+.event-list {
   list-style: none;
   padding: 0;
   width: 100%;
 }
 
-.group-list-item {
+.event-list-item {
   border-bottom: 1px solid #ccc;
   border-top: 1px solid #ccc;
   padding: 10px;
@@ -40,22 +35,22 @@ body {
   align-items: center;
 }
 
-.group-list-item img {
+.event-list-item img {
   max-width: 100%;
   margin-right: 10px;
 }
 
-.group-list-item .text-content {
+.event-list-item .text-content {
   /* width: 70%; */
 }
 
-.group-link-on-group-page {
-  color: teal;
+.event-link-on-event-page {
+  text-decoration: underline;
   cursor: pointer;
+  color: teal;
+  margin-right: 20px;
 }
 
-.event-link-on-group-page {
-  color: grey;
-  cursor: pointer;
-  margin-right: 20px;
+.group-link-on-event-page{
+  color: grey
 }
