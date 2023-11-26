@@ -16,7 +16,10 @@ import EventDetail from "./components/Events/EventDetail";
 import CreateEventForm from "./components/Events/CreateEventForm";
 import EditEventForm from "./components/Events/EditEventForm";
 import "./index.css";
-import image from '../src/Meetup.png';
+import MeetupImage from '../src/Meetup.png';
+import FindAnEventIcon from '../src/Find-an-event-icon.PNG';
+import SeeallgroupsIcon from '../src/See-all-groups-Icon.PNG';
+import Startanewgroupicon from '../src/start-a-new-group-icon.PNG'
 
 export const loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit,sed do eiusmod tempor incididunt ut labore et dolore magnaaliqua. Ut enim ad minim veniam, quis nostrud exercitationullamco laboris nisi ut aliquip ex ea commodo consequat.Duis aute irure dolor in reprehenderit in voluptat evelit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
 
@@ -54,7 +57,7 @@ function App() {
                 <p>{loremIpsum}</p>
               </div>
               <div className="image-section">
-                <img src={image} alt="Meetup" />
+                <img src={MeetupImage} alt="Meetup" />
               </div>
             </div>
             <div className="middle-section">
@@ -63,10 +66,16 @@ function App() {
             </div>
             <div className="bottom-section">
               <div className="section">
+                <div>
+                <img src={SeeallgroupsIcon} alt="Meetup" />
+                </div>
                 <Link to="/groups" className='teal-link'>See All Groups</Link>
                 <p>{loremIpsum}</p>
               </div>
               <div className="section">
+                <div>
+                <img src={FindAnEventIcon} alt="Meetup" />
+                </div>
                 <Link to="/events" className='teal-link'>Find an Event</Link>
                 <p>{loremIpsum}</p>
                 {!session.user && (
@@ -80,11 +89,14 @@ function App() {
                 )}
               </div>
               <div className="section">
+                <div>
+              <img src={Startanewgroupicon} alt="Meetup" />
+                </div>
                 <Link
-                to="/groups/new"
-                className={session.user ? "teal-link" : "disabled-link"}
-                style={session.user ? {} : { color: 'lightgrey', cursor: 'default', pointerEvents: 'none' }}
-                 >Start a new Group</Link>
+                  to="/groups/new"
+                  className={session.user ? "teal-link" : "disabled-link"}
+                  style={session.user ? {} : { color: 'lightgrey', cursor: 'default', pointerEvents: 'none' }}
+                >Start a new Group</Link>
                 <p>{loremIpsum}</p>
               </div>
             </div>

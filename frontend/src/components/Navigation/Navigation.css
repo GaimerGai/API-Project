@@ -1,12 +1,19 @@
-
-.profile-button-complete{
-  float: right;
+.logo-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.navigation-button{
-  cursor:default;
+.buttons-container {
+  display: flex;
+  align-items: center;
 }
 
-.navigation-button:hover{
+.navigation-button {
+  cursor: default;
+  margin-right: 10px; 
+}
+
+.navigation-button:hover {
   cursor: pointer;
 }
