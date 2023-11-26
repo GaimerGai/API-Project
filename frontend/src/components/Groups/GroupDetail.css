@@ -1,4 +1,69 @@
-.join-group-button{
+.join-group-button {
   background-color: red;
-  color:white;
+  color: white;
 }
+
+.web-page {
+  display: flex;
+  flex-direction: column;
+  /* Add other styles as needed */
+}
+
+.group-info-container {
+  display: flex;
+  background-color: #fff; /* White background for the first half */
+  /* Add other styles as needed */
+}
+
+.group-details-container {
+  display: flex;
+  flex-direction:column;
+  background-color: #f4f4f4; /* Light grey background for the second half */
+  /* Add other styles as needed */
+}
+
+.organizer-info,
+.about-info {
+  flex: 1;
+  /* flex-basis: 50%; Set equal width for both sections */
+  padding: 20px;
+  /* Add other styles as needed */
+}
+
+.events-container {
+  display: flex;
+  flex-direction: column; /* Cards stacked vertically */
+  flex: 1;
+  padding: 20px;
+  /* Add other styles as needed */
+}
+
+.upcoming-events,
+.past-events {
+  flex: 1;
+  padding: 20px;
+  /* Add other styles as needed */
+}
+
+.event-card {
+  display: flex;
+  border-radius: 8px;
+  background-color: #fff;
+  margin-bottom: 20px;
+  width: 600px;
+  box-sizing: border-box;
+}
+
+.event-card img {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  width: 100%;
+  max-width: 200px; /* Set a maximum width for the image */
+  object-fit: cover; /* Ensure the image covers the entire container */
+}
+
+.event-card-details {
+  flex: 1;
+  padding: 20px;
+}
+

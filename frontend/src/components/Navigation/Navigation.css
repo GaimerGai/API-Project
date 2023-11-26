@@ -11,9 +11,21 @@
 
 .navigation-button {
   cursor: default;
-  margin-right: 10px; 
+  margin-right: 10px;
 }
 
 .navigation-button:hover {
   cursor: pointer;
+}
+
+.profile-dropdown {
+  top: 100%;
+  left: 0;
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ccc; /* Add border to the dropdown */
+  border-radius: 4px;
 }
