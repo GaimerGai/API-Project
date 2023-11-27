@@ -1,0 +1,42 @@
+.SignupFormModal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+label {
+  margin-bottom: 10px;
+}
+
+input {
+  width: 300px;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #ccc;
+}
+
+button.SignupButton:not([disabled]) {
+  background-color: red;
+  color: white;
+  cursor: pointer;
+}
+
+button.SignupButton[disabled] {
+  background-color: lightgrey;
+  color: darkgray;
+  cursor: not-allowed;
+}

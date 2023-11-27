@@ -5,6 +5,7 @@ import { fetchGroupById } from "../../store/group";
 import { Link, useParams } from "react-router-dom";
 import DeleteConfirmationModal from "../DeleteConfirmationModal";
 import OpenModalMenuItem from "../Navigation/OpenModalMenuItem";
+import '../Events/EventDetail.css';
 
 function EventDetail() {
   const { eventId } = useParams();
@@ -15,6 +16,8 @@ function EventDetail() {
 
   const eventData = useSelector((state) => state.events.currEvent);
   const groupData = useSelector((state) => state.groups.currGroup);
+  const session = useSelector((state) => state.session)
+
 
 
   const closeMenu = (e) => {
@@ -37,57 +40,55 @@ function EventDetail() {
     fetchData();
   }, [dispatch, eventId, eventData.groupId]);
 
-  // const handleDeleteClick = () => {
-  //   setShowDeleteModal(true);
-  // };
-
-  // const handleDeleteConfirm = async () => {
-  //   await dispatch(deleteSelectedEvent(eventData.id));
-  //   history.push(`/events`);
-  //   setShowDeleteModal(false);
-  // };
-
-  // const handleDeleteCancel = () => {
-  //   setShowDeleteModal(false);
-  // };
-
   return (
     isLoaded && (
       <div className="web-page">
-        <div className="backlink">
+        <div className="breadcrumb">
           <Link to="/events">Events</Link>
-        </div>
-        <div className="topcard">
           <h2>{eventData.name}</h2>
-          <h3>Hosted by: {eventData.hostFirstName} {eventData.hostLastName}</h3>
+          <p className="host-text">
+            Hosted by: {eventData.hostFirstName} {eventData.hostLastName}
+          </p>
         </div>
-        <img src={eventData.previewImage} alt="Event Preview" />
-        <div className="middlecard">
-          <div className="groupCard">
-            <img src={groupData.previewImage} alt="Group Preview" />
-            <h4>{groupData.name}</h4>
-            <p>{groupData.isPublic ? "Public Group" : "Private Group"}</p>
+        <div className="event-details">
+          <div className="left-section">
+            <img src={eventData.previewImage} alt="Event Preview" />
           </div>
-          <div className="eventinfocard">
-            <p>Start Date: {new Date(eventData.startDate).toLocaleString()}</p>
-            <p>End Date: {new Date(eventData.endDate).toLocaleString()}</p>
-            <p>Price: ${eventData.price}</p>
-            <p>{eventData.type === "In person" ? "In Person" : "Online"} Event</p>
-            <button>
-              <Link to={`/events/${eventData.id}/edit`}>
-                Update
-              </Link>
-            </button>
-            <button>
-              <OpenModalMenuItem
-              itemText="Delete"
-              onItemClick={closeMenu}
-              modalComponent={<DeleteConfirmationModal entityType='event'/>}
-              />
-            </button>
+          <div className="right-section">
+            <div className="groupCard">
+              <img src={groupData.previewImage} alt="Group Preview" />
+              <h4>{groupData.name}</h4>
+              <p>{groupData.isPublic ? "Public Group" : "Private Group"}</p>
+            </div>
+            <div className="eventinfocard">
+              <p>Start Date: {new Date(eventData.startDate).toLocaleString()}</p>
+              <p>End Date: {new Date(eventData.endDate).toLocaleString()}</p>
+              <div>
+              <i class="fa-solid fa-dollar-sign"></i>
+              <p>Price: ${eventData.price}</p>
+              </div>
+              <p>{eventData.type === "In person" ? "In Person" : "Online"} Event</p>
+              {session.user && (session.user.id === eventData.organizerId || session.user.id === groupData.organizerId) && (
+                <>
+                  <button>
+                    <Link to={`/events/${eventData.id}/edit`}>Update</Link>
+                  </button>
+                  <button>
+                    <OpenModalMenuItem
+                      itemText="Delete"
+                      onItemClick={closeMenu}
+                      modalComponent={<DeleteConfirmationModal entityType='event' />}
+                    />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
-        <div className="bottomcard">{eventData.description}</div>
+        <div className="description">
+          <h3>Details</h3>
+          <p>{eventData.description}</p>
+        </div>
       </div>
     )
   );

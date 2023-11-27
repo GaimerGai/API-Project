@@ -4,6 +4,7 @@ import { deleteSelectedGroup } from "../../store/group";
 import { deleteSelectedEvent } from "../../store/event";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
+import './DeleteConfirmationModal.css';
 
 
 function DeleteConfirmationModal({ entityType }) {

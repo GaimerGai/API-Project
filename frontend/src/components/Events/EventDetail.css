@@ -1,0 +1,54 @@
+.web-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.breadcrumb {
+  margin-bottom: 20px;
+}
+
+.event-details {
+  display: flex;
+  justify-content: space-between;
+  background-color: lightgrey;
+}
+
+.left-section {
+  width: 30%;
+  padding: 20px;
+  margin: 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.right-section {
+  width: 70%;
+  position: relative;
+  margin: 20px;
+}
+
+img {
+  width: 100%;
+  height: auto;
+}
+
+.groupCard,
+.eventinfocard {
+  background-color: white;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.host-text {
+  color: lightgrey;
+}
+
+.description {
+  text-align: center;
+  background-color: lightgrey;
+  padding: 20px;
+  border-radius: 10px;
+}

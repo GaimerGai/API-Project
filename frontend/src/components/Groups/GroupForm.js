@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
-import { postNewGroup, updateExistingGroup } from '../../store/group';
+import { postNewGroup, updateExistingGroup, createGroupImageMaker } from '../../store/group';
 import '../Groups/GroupForm.css'
 
 const GroupForm = ({ group, formType }) => {
@@ -12,21 +12,24 @@ const GroupForm = ({ group, formType }) => {
   console.log("This is userData", userData)
   console.log("This is")
 
-  const [city, setCity] = useState(group?.city || '');
-  const [state, setState] = useState(group?.state || '');
+  const initialCity = formType === 'Update Group' ? group?.city || '' : '';
+  const initialState = formType === 'Update Group' ? group?.state || '' : '';
+
+  const [city, setCity] = useState(initialCity);
+  const [state, setState] = useState(initialState);
   const [name, setName] = useState(group?.name || '');
   const [about, setAbout] = useState(group?.about || '');
   const [onlineStatus, setOnlineStatus] = useState(group?.type || '');
   const [privacy, setPrivacy] = useState(
     group?.private === false ? 'true' :
-    group?.private === true ? 'private' :
-    ''
+      group?.private === true ? 'private' :
+        ''
   );
   const [imageUrl, setImageUrl] = useState((group?.GroupImages && group?.GroupImages[0]?.url) || '');
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    if (!userData || (formType === 'Update Group' && (group.organizerId !== userData.id))){
+    if (!userData || (formType === 'Update Group' && (group.organizerId !== userData.id))) {
       history.push('/')
     }
   }, [])
@@ -86,7 +89,12 @@ const GroupForm = ({ group, formType }) => {
       private: privacy === 'private',
       city: city,
       state: state,
-      previewImage: imageUrl,
+      // previewImage: imageUrl,
+    }
+
+    const imgUrl = {
+      url:imageUrl,
+      preview:true
     }
 
     console.log("this is groupData:", groupData)
@@ -97,6 +105,7 @@ const GroupForm = ({ group, formType }) => {
       newGroup = await dispatch(updateExistingGroup({ ...group, ...groupData }))
     } else {
       newGroup = await dispatch(postNewGroup(groupData))
+      await dispatch(createGroupImageMaker(newGroup.id, imgUrl))
     }
 
     if (newGroup.id) {
@@ -130,7 +139,7 @@ const GroupForm = ({ group, formType }) => {
           <input
             type="text"
             placeholder="City, STATE"
-            value={formType === 'Update Group' ? `${city}, ${state}` : ''}
+            // value={`${city}, ${state}`}
             onChange={(e) => {
               const locationValue = e.target.value;
               const [inputCity, inputState] = locationValue.split(',').map((part) => part.trim());

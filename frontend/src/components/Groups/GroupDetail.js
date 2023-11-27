@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchGroupById, fetchEventsByGroupId} from "../../store/group";
+import { fetchGroupById, fetchEventsByGroupId } from "../../store/group";
 import { Link, useParams, useHistory } from "react-router-dom";
 import { loremIpsum } from "../../App";
 import DeleteConfirmationModal from "../DeleteConfirmationModal";
@@ -17,6 +17,8 @@ function GroupDetail() {
   const session = useSelector((state) => state.session)
   const [showMenu, setShowMenu] = useState(false);
   const ulRef = useRef();
+
+  console.log("this is groupPreviewurl")
 
   const closeMenu = (e) => {
     if (!ulRef.current?.contains(e.target)) {
@@ -68,7 +70,7 @@ function GroupDetail() {
           </div>
           <div className="group-details">
             <h2>{groupData.name}</h2>
-            <img src={groupData.previewImage} alt="Group Preview" />
+            <img src={groupData?.GroupImages[0]?.url} alt="Group Preview" />
             <h3>
               {groupData.city}, {groupData.state}
             </h3>
@@ -79,17 +81,21 @@ function GroupDetail() {
                 Join this group
               </button>
             )}
-            <button onClick={handleCreateEvent}>Create An Event</button>
-            <button>
-              <Link to={`/groups/${groupData.id}/edit`}>Update</Link>
-            </button>
-            <button>
-              <OpenModalMenuItem
-                itemText="Delete"
-                onItemClick={closeMenu}
-                modalComponent={<DeleteConfirmationModal entityType='group' />}
-              />
-            </button>
+            {session.user && session.user.id === groupData.Organizer.id && (
+              <>
+                <button onClick={handleCreateEvent}>Create An Event</button>
+                <button>
+                  <Link to={`/groups/${groupData.id}/edit`}>Update</Link>
+                </button>
+                <button>
+                  <OpenModalMenuItem
+                    itemText="Delete"
+                    onItemClick={closeMenu}
+                    modalComponent={<DeleteConfirmationModal entityType='group' />}
+                  />
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -109,16 +115,18 @@ function GroupDetail() {
               <div className="upcoming-events">
                 <h2>Upcoming Events</h2>
                 {upcomingEvents.map((event) => (
-                  <div key={event.id} className="event-card">
-                    <img src={event.previewImage} alt={event.name} />
-                    <div className="event-details">
-                      <p>Date: {new Date(event.startDate).toLocaleDateString()}</p>
-                      <p>Time: {new Date(event.startDate).toLocaleTimeString()}</p>
-                      <h3>{event.name}</h3>
-                      <p>Location: {event.Venue ? event.Venue.city : "Online"}</p>
-                      <p>{event.description}</p>
+                  <Link key={event.id} to={`/events/${event.id}`} className="event-link">
+                    <div key={event.id} className="event-card">
+                      <img src={event.previewImage} alt={event.name} />
+                      <div className="event-details">
+                        <p className="date">Date: {new Date(event.startDate).toLocaleDateString()}</p>
+                        <p className="time">Time: {new Date(event.startDate).toLocaleTimeString()}</p>
+                        <h3>{event.name}</h3>
+                        <p>Location: {event.Venue ? event.Venue.city : "Online"}</p>
+                        <p>{event.description}</p>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
@@ -127,16 +135,18 @@ function GroupDetail() {
               <div className="past-events">
                 <h2>Past Events</h2>
                 {pastEvents.map((event) => (
-                  <div key={event.id} className="event-card">
-                    <img src={event.previewImage} alt={event.name} />
-                    <div className="event-details">
-                      <p>Date: {new Date(event.startDate).toLocaleDateString()}</p>
-                      <p>Time: {new Date(event.startDate).toLocaleTimeString()}</p>
-                      <h3>{event.name}</h3>
-                      <p>Location: {event.Venue ? event.Venue.city : "Online"}</p>
-                      <p>{event.description}</p>
+                  <Link key={event.id} to={`/events/${event.id}`} className="event-link">
+                    <div key={event.id} className="event-card">
+                      <img src={event.previewImage} alt={event.name} />
+                      <div className="event-details">
+                        <p>Date: {new Date(event.startDate).toLocaleDateString()}</p>
+                        <p>Time: {new Date(event.startDate).toLocaleTimeString()}</p>
+                        <h3>{event.name}</h3>
+                        <p>Location: {event.Venue ? event.Venue.city : "Online"}</p>
+                        <p>{event.description}</p>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

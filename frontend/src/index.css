@@ -47,6 +47,11 @@
   text-align: center;
 }
 
+.bottom-section img{
+  max-height: 20%;
+  max-width: 20%;
+}
+
 .bottom-section .section{
   width: 30%;
   margin-bottom: 20px;
