@@ -16,6 +16,8 @@ function EventDetail() {
 
   const eventData = useSelector((state) => state.events.currEvent);
   const groupData = useSelector((state) => state.groups.currGroup);
+  console.log("This is eventData:", eventData)
+  console.log("This is GroupData:", groupData)
   const session = useSelector((state) => state.session)
 
 
@@ -52,22 +54,32 @@ function EventDetail() {
         </div>
         <div className="event-details">
           <div className="left-section">
-            <img src={eventData.previewImage} alt="Event Preview" />
+          <img src={eventData?.EventImages && eventData.EventImages[0]?.url} alt="Event Preview" />
           </div>
           <div className="right-section">
             <div className="groupCard">
-              <img src={groupData.previewImage} alt="Group Preview" />
+            <Link to={`/groups/${groupData.id}`}>
+              <img src={groupData?.GroupImages && groupData.GroupImages[0]?.url} alt="Group Preview" />
               <h4>{groupData.name}</h4>
               <p>{groupData.isPublic ? "Public Group" : "Private Group"}</p>
+            </Link>
             </div>
             <div className="eventinfocard">
-              <p>Start Date: {new Date(eventData.startDate).toLocaleString()}</p>
-              <p>End Date: {new Date(eventData.endDate).toLocaleString()}</p>
-              <div>
-              <i class="fa-solid fa-dollar-sign"></i>
-              <p>Price: ${eventData.price}</p>
+              <div className="time">
+                <i className="fa-solid fa-clock"></i>
+                <div className="time-details">
+                  <p>Start Date: {new Date(eventData.startDate).toLocaleString()}</p>
+                  <p>End Date: {new Date(eventData.endDate).toLocaleString()}</p>
+                </div>
               </div>
-              <p>{eventData.type === "In person" ? "In Person" : "Online"} Event</p>
+              <div className="price">
+                <i className="fa-solid fa-dollar-sign"></i>
+                <p>{eventData.price}</p>
+              </div>
+              <div className="location">
+                <i className="fa-solid fa-map-pin"></i>
+                <p>{eventData.type === "In person" ? "In Person" : "Online"} Event</p>
+              </div>
               {session.user && (session.user.id === eventData.organizerId || session.user.id === groupData.organizerId) && (
                 <>
                   <button>

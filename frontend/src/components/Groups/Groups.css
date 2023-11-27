@@ -1,4 +1,3 @@
-
 body {
   margin: 0;
 }
@@ -33,20 +32,21 @@ body {
 }
 
 .group-list-item {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
   border-bottom: 1px solid #ccc;
   border-top: 1px solid #ccc;
   padding: 10px;
-  display: flex;
-  align-items: center;
 }
 
 .group-list-item img {
-  max-width: 100%;
+  max-width: 40%;
   margin-right: 10px;
 }
 
-.group-list-item .text-content {
-  /* width: 70%; */
+.text-content {
+  flex-grow: 1;
 }
 
 .group-link-on-group-page {

@@ -69,35 +69,42 @@ function GroupDetail() {
             <Link to="/groups">Groups</Link>
           </div>
           <div className="group-details">
-            <h2>{groupData.name}</h2>
-            <img src={groupData?.GroupImages[0]?.url} alt="Group Preview" />
-            <h3>
+            <img id="item1" src={groupData?.GroupImages[0]?.url} alt="Group Preview" />
+            <h2 id="item2">{groupData.name}</h2>
+            <h3 id="item3">
               {groupData.city}, {groupData.state}
             </h3>
-            <p>Number of Events: {groupData.numEvents} • {isPrivate}</p>
-            <p>Organized by: {groupData.Organizer.firstName} {groupData.Organizer.lastName}</p>
-            {session.user?.id !== groupData.Organizer.id && session.user && (
-              <button className="join-group-button" onClick={handleJoinGroup}>
-                Join this group
-              </button>
-            )}
-            {session.user && session.user.id === groupData.Organizer.id && (
-              <>
-                <button onClick={handleCreateEvent}>Create An Event</button>
-                <button>
-                  <Link to={`/groups/${groupData.id}/edit`}>Update</Link>
-                </button>
-                <button>
-                  <OpenModalMenuItem
-                    itemText="Delete"
-                    onItemClick={closeMenu}
-                    modalComponent={<DeleteConfirmationModal entityType='group' />}
-                  />
-                </button>
-              </>
+            <p id="item4">Number of Events: {groupData.numEvents} • {isPrivate}</p>
+            <p id="item5">Organized by: {groupData.Organizer.firstName} {groupData.Organizer.lastName}</p>
+            {session.user && (
+              <div className="group-buttons">
+                {session.user.id !== groupData.Organizer.id && (
+                  <button id="item6" className="join-group-button" onClick={handleJoinGroup}>
+                    Join this group
+                  </button>
+                )}
+                {session.user.id === groupData.Organizer.id && (
+                  <>
+                    <button id="item7" onClick={handleCreateEvent}>
+                      Create An Event
+                    </button>
+                    <button id="item8">
+                      <Link to={`/groups/${groupData.id}/edit`}>Update</Link>
+                    </button>
+                    <button id="item9">
+                      <OpenModalMenuItem
+                        itemText="Delete"
+                        onItemClick={closeMenu}
+                        modalComponent={<DeleteConfirmationModal entityType='group' />}
+                      />
+                    </button>
+                  </>
+                )}
+              </div>
             )}
           </div>
         </div>
+
 
         <div className="group-details-container">
           <div className="organizer-info">
@@ -117,14 +124,12 @@ function GroupDetail() {
                 {upcomingEvents.map((event) => (
                   <Link key={event.id} to={`/events/${event.id}`} className="event-link">
                     <div key={event.id} className="event-card">
-                      <img src={event.previewImage} alt={event.name} />
-                      <div className="event-details">
-                        <p className="date">Date: {new Date(event.startDate).toLocaleDateString()}</p>
-                        <p className="time">Time: {new Date(event.startDate).toLocaleTimeString()}</p>
-                        <h3>{event.name}</h3>
-                        <p>Location: {event.Venue ? event.Venue.city : "Online"}</p>
-                        <p>{event.description}</p>
-                      </div>
+                      <img id="item10" src={event.previewImage} alt={event.name} />
+                        <p id="item11">Date: {new Date(event.startDate).toLocaleDateString()}</p>
+                        <p id="item12">Time: {new Date(event.startDate).toLocaleTimeString()}</p>
+                        <h3 id="item13">{event.name}</h3>
+                        <p id="item14">Location: {event.Venue ? event.Venue.city : "Online"}</p>
+                        <p id="item15">{event.description}</p>
                     </div>
                   </Link>
                 ))}

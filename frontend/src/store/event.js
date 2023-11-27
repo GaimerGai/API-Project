@@ -5,6 +5,7 @@ const LOAD_EVENT = 'events/loadEvent';
 const CREATE_EVENT = 'events/createEvent';
 const UPDATE_EVENT = 'events/updateEvent';
 const DELETE_EVENT = 'events/deleteEvent';
+const CREATE_EVENT_IMG = 'events/createEventImage'
 
 
 /**  Action Creators: */
@@ -32,6 +33,12 @@ const deleteEvent = (event) => ({
   type: DELETE_EVENT,
   event,
 });
+
+const createEventImage = (eventId, img) =>({
+  type: CREATE_EVENT_IMG,
+  eventId,
+  img
+})
 
 /** Thunk Action Creators: */
 // Get All events
@@ -96,6 +103,20 @@ export const deleteSelectedEvent = (eventId) => async (dispatch) => {
   }
   return res;
 };
+
+export const createEventImageMaker = (eventId,img)=>async(dispatch)=>{
+  const res= await csrfFetch(`/api/events/${eventId}/images`,{
+    method: "POST",
+    body: JSON.stringify(img)
+  })
+  const data = await res.json()
+  if (res.ok) {
+    dispatch(createEventImage(data));
+    return data
+  } else {
+    throw res;
+  }
+  }
 
 const eventsReducer = (state = { events: {}, currEvent: {} }, action) => {
   switch (action.type) {

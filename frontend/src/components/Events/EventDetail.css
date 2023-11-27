@@ -42,6 +42,10 @@ img {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+.groupCard img {
+  max-width: 10%;
+}
+
 .host-text {
   color: lightgrey;
 }
@@ -51,4 +55,24 @@ img {
   background-color: lightgrey;
   padding: 20px;
   border-radius: 10px;
+}
+
+.time {
+  display: flex;
+  align-items: center;
+}
+
+.time-details {
+  margin-left: 10px;
+}
+
+.price,
+.location {
+  display: flex;
+  align-items: center;
+}
+
+.price p,
+.location p {
+  margin-left: 10px;
 }

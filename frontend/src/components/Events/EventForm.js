@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
-import { postNewEvent, updateExistingEvent } from '../../store/event';
+import { postNewEvent, updateExistingEvent, createEventImageMaker } from '../../store/event';
 import { fetchGroupById } from '../../store/group';
 import '../Events/EventForm.css';
 
@@ -106,7 +106,12 @@ const EventForm = ({ event, formType }) => {
       hostLastName: userData.lastName,
       startDate: startTime,
       endDate: endTime,
-      previewImage: imageUrl,
+      // previewImage: imageUrl,
+    }
+
+    const imgUrl = {
+      url:imageUrl,
+      preview:true
     }
 
     let newEvent;
@@ -115,6 +120,7 @@ const EventForm = ({ event, formType }) => {
       newEvent = await dispatch(updateExistingEvent({ ...event, ...eventData }))
     } else {
       newEvent = await dispatch(postNewEvent(eventData))
+      await dispatch(createEventImageMaker(newEvent.id, imgUrl))
     }
 
     if (newEvent.id) {

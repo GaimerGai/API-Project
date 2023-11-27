@@ -3,11 +3,6 @@
   color: white;
 }
 
-.web-page {
-  display: flex;
-  flex-direction: column;
-}
-
 .group-info-container {
   display: flex;
   background-color: #fff;
@@ -16,7 +11,7 @@
 
 .group-details-container {
   display: flex;
-  flex-direction:column;
+  flex-direction: column;
   background-color: #f4f4f4;
   margin-bottom: 20px;
 }
@@ -45,10 +40,11 @@
 .event-card {
   display: flex;
   border-radius: 8px;
-  background-color: #fff;
+  background-color: rgb(211,211,211);
   margin-bottom: 30px;
   width: 600px;
   box-sizing: border-box;
+  padding:15px;
 }
 
 .event-card img {
@@ -59,7 +55,68 @@
   object-fit: cover;
 }
 
-.event-card-details {
-  flex: 1;
-  padding: 20px;
+
+.groupCard{
+  width: 600px;
+}
+
+.eventinfocard{
+  width: 600px;
+}
+.group-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: auto;
+  width: 1000px;
+}
+
+.group-details img {
+  max-width: fit-content;
+}
+
+#item1 {
+  grid-column: 1;
+}
+
+#item2 {
+  grid-column: 2;
+}
+
+#item3 {
+  grid-column: 2;
+}
+
+#item4 {
+  grid-column: 2;
+}
+
+#item5 {
+  grid-column: 2;
+}
+
+.group-buttons {
+  grid-column: 2;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.group-buttons button {
+  width:130px;
+}
+
+#item6 {
+  grid-column: 2;
+}
+
+#item7 {
+  grid-column: 2;
+}
+
+#item8 {
+  grid-column: 2;
+}
+
+#item9 {
+  grid-column: 2;
 }

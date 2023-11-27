@@ -12,6 +12,7 @@ function Groups() {
 
   const dispatch = useDispatch();
 
+
   useEffect(() => {
     dispatch(fetchGroups()).then(() => setIsLoaded(true));
   }, [dispatch]);
@@ -36,7 +37,7 @@ function Groups() {
           {Object.values(groups).map((group) => (
             <li key={group.id} className="group-list-item">
               <Link to={`/groups/${group.id}`}>
-                <img src={group.imageSrc} alt={group.name} />
+                <img src={group.previewImage} alt={group.name} />
               </Link>
               <div className="text-content">
                 <GroupIndexItem group={group} />

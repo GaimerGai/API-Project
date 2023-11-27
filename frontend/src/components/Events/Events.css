@@ -28,15 +28,16 @@
 }
 
 .event-list-item {
+  display: grid;
+  grid-template-columns: auto auto;
   border-bottom: 1px solid #ccc;
   border-top: 1px solid #ccc;
   padding: 10px;
-  display: flex;
   align-items: center;
 }
 
 .event-list-item img {
-  max-width: 100%;
+  max-width: 40%;
   margin-right: 10px;
 }
 

@@ -37,7 +37,7 @@ function Events() {
           {Object.values(events).map((event) => (
             <li key={event.id} className="event-list-item">
               <Link to={`/events/${event.id}`}>
-                <img src={event.imageSrc} alt={event.name} />
+                <img src={event.previewImage} alt={event.name} />
               </Link>
               <div className="text-content">
                 <EventIndexItem event={event} />
