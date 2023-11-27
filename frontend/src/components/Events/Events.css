@@ -41,10 +41,6 @@
   margin-right: 10px;
 }
 
-.event-list-item .text-content {
-  /* width: 70%; */
-}
-
 .event-link-on-event-page {
   text-decoration: underline;
   cursor: pointer;

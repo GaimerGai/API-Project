@@ -578,8 +578,8 @@ router.post(
         capacity: req.body.capacity,
         price: req.body.price,
         description: req.body.description,
-        hostFirstName: hostFirstName,
-        hostLastName: hostLastName,
+        hostFirstName: req.body.hostFirstName,
+        hostLastName: req.body.hostLastName,
         startDate: req.body.startDate,
         endDate: req.body.endDate,
       });

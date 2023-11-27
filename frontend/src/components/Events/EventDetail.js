@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchEventById } from "../../store/event";
 import { fetchGroupById } from "../../store/group";
@@ -54,27 +54,43 @@ function EventDetail() {
         </div>
         <div className="event-details">
           <div className="left-section">
-          <img src={eventData?.EventImages && eventData.EventImages[0]?.url} alt="Event Preview" />
+            <img src={eventData?.EventImages && eventData.EventImages[0]?.url} alt="Event Preview" />
           </div>
           <div className="right-section">
             <div className="groupCard">
-            <Link to={`/groups/${groupData.id}`}>
-              <img src={groupData?.GroupImages && groupData.GroupImages[0]?.url} alt="Group Preview" />
-              <h4>{groupData.name}</h4>
-              <p>{groupData.isPublic ? "Public Group" : "Private Group"}</p>
-            </Link>
+              <Link to={`/groups/${groupData.id}`}>
+                <img src={groupData?.GroupImages && groupData.GroupImages[0]?.url} alt="Group Preview" />
+                <h4>{groupData.name}</h4>
+                <p>{groupData.isPublic ? "Public Group" : "Private Group"}</p>
+              </Link>
             </div>
             <div className="eventinfocard">
               <div className="time">
                 <i className="fa-solid fa-clock"></i>
                 <div className="time-details">
-                  <p>Start Date: {new Date(eventData.startDate).toLocaleString()}</p>
-                  <p>End Date: {new Date(eventData.endDate).toLocaleString()}</p>
+                  <p>Start Date: {new Date(eventData.startDate).toLocaleString('en-US', {
+                    day: 'numeric',
+                    month: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    second: 'numeric',
+                    hour12: true,
+                  }).replace(',', '\u00b7')}</p>
+                  <p>End Date: {new Date(eventData.endDate).toLocaleString('en-US', {
+                    day: 'numeric',
+                    month: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    second: 'numeric',
+                    hour12: true,
+                  }).replace(',', '\u00b7')}</p>
                 </div>
               </div>
               <div className="price">
                 <i className="fa-solid fa-dollar-sign"></i>
-                <p>{eventData.price}</p>
+                <p>{eventData.price === 0.00 ? "FREE" : eventData.price}</p>
               </div>
               <div className="location">
                 <i className="fa-solid fa-map-pin"></i>
