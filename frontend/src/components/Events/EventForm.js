@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
-import { postNewEvent, updateExistingEvent } from '../../store/event';
+import { postNewEvent, updateExistingEvent, createEventImageMaker } from '../../store/event';
 import { fetchGroupById } from '../../store/group';
+import '../Events/EventForm.css';
 
 
 const EventForm = ({ event, formType }) => {
@@ -11,15 +12,33 @@ const EventForm = ({ event, formType }) => {
   const { groupId } = useParams();
 
   const userData = useSelector((state) => state.session.user);
+  console.log("Event prop:", event);
+
+  const formatDateTime = (dateTimeString) => {
+    const date = new Date(dateTimeString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
 
   const [name, setName] = useState(event?.name || '');
-  const [about, setAbout] = useState(event?.about || '');
-  const [onlineStatus, setOnlineStatus] = useState(event?.onlineStatus || '');
+  const [about, setAbout] = useState(event?.description || '');
+  const [onlineStatus, setOnlineStatus] = useState(event?.type || '');
   const [price, setPrice] = useState(event?.price || '');
-  const [startTime, setStartTime] = useState(event?.startTime || '');
-  const [endTime, setEndTime] = useState(event?.endTime || '');
-  const [imageUrl, setImageUrl] = useState(event?.imageUrl || '');
+  const [startTime, setStartTime] = useState(event?.startDate ? formatDateTime(event.startDate) : '');
+  const [endTime, setEndTime] = useState(event?.endDate ? formatDateTime(event.endDate) : '');
+  const [imageUrl, setImageUrl] = useState((event?.EventImages && event?.EventImages[0]?.url) || '');
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (!userData){
+      history.push('/')
+    }
+  }, [])
 
   useEffect(() => {
     dispatch(fetchGroupById(groupId));
@@ -31,7 +50,7 @@ const EventForm = ({ event, formType }) => {
     const newErrors = {};
 
 
-    const startTimeDate = new Date(startTime).getTime() ;
+    const startTimeDate = new Date(startTime).getTime();
     const endTimeDate = new Date(endTime).getTime();
 
     if (!name.trim()) {
@@ -87,7 +106,12 @@ const EventForm = ({ event, formType }) => {
       hostLastName: userData.lastName,
       startDate: startTime,
       endDate: endTime,
-      previewImage: imageUrl,
+      // previewImage: imageUrl,
+    }
+
+    const imgUrl = {
+      url:imageUrl,
+      preview:true
     }
 
     let newEvent;
@@ -96,6 +120,7 @@ const EventForm = ({ event, formType }) => {
       newEvent = await dispatch(updateExistingEvent({ ...event, ...eventData }))
     } else {
       newEvent = await dispatch(postNewEvent(eventData))
+      await dispatch(createEventImageMaker(newEvent.id, imgUrl))
     }
 
     if (newEvent.id) {
@@ -108,9 +133,9 @@ const EventForm = ({ event, formType }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className='name-instructions'>
-        <h3>Create an Event for {groupData.name}</h3>
+    <form onSubmit={handleSubmit} className="event-form-container">
+      <div className='name-instructions section-divider'>
+        <h3>{formType === "Update Event" ? `Update an Event for ${groupData.name}` : `Create an Event for ${groupData.name}`}</h3>
         <h2>What is the name of your event</h2>
         <label>
           <input
@@ -118,17 +143,19 @@ const EventForm = ({ event, formType }) => {
             placeholder="Event Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            className="input-box"
           />
         </label>
-        {errors.name && <div className="errors">{errors.name}</div>}
+        {errors.name && <div className="error-text">{errors.name}</div>}
       </div>
 
-      <div className='statuses-and-url'>
-        <h3>Is this an in person or online event?</h3>
+      <div className='statuses-and-url section-divider'>
+        <h3>Is this an in-person or online event?</h3>
         <label>
           <select
             value={onlineStatus}
             onChange={(e) => setOnlineStatus(e.target.value)}
+            className="input-box"
           >
             <option value="" disabled>
               (Select One)
@@ -137,7 +164,7 @@ const EventForm = ({ event, formType }) => {
             <option value="In person">In Person</option>
           </select>
         </label>
-        {errors.onlineStatus && <div className="errors">{errors.onlineStatus}</div>}
+        {errors.onlineStatus && <div className="error-text">{errors.onlineStatus}</div>}
 
         <h3>What is the price for your event?</h3>
         <label>
@@ -146,12 +173,13 @@ const EventForm = ({ event, formType }) => {
             placeholder="$    0"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
+            className="input-box"
           />
         </label>
-        {errors.privacy && <div className="errors">{errors.privacy}</div>}
+        {errors.price && <div className="error-text">{errors.price}</div>}
       </div>
 
-      <div className='times'>
+      <div className='times section-divider'>
         <h3>When does your event start?</h3>
         <label>
           <input
@@ -160,9 +188,10 @@ const EventForm = ({ event, formType }) => {
             value={startTime}
             min={new Date()}
             onChange={(e) => setStartTime(e.target.value)}
+            className="input-box"
           />
         </label>
-        {errors.startTime && <div className="errors">{errors.startTime}</div>}
+        {errors.startTime && <div className="error-text">{errors.startTime}</div>}
 
         <h3>When does your event end?</h3>
         <label>
@@ -172,38 +201,41 @@ const EventForm = ({ event, formType }) => {
             value={endTime}
             min={startTime}
             onChange={(e) => setEndTime(e.target.value)}
+            className="input-box"
           />
         </label>
-        {errors.endTime && <div className="errors">{errors.endTime}</div>}
+        {errors.endTime && <div className="error-text">{errors.endTime}</div>}
       </div>
 
-      <div className='imageUrl'>
-        <h3>Please add in image url for your group below:</h3>
+      <div className='imageUrl section-divider'>
+        <h3>Please add an image URL for your event below:</h3>
         <label>
           <input
             type="text"
             placeholder="Image URL"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
+            className="input-box"
           />
         </label>
-        {errors.imageUrl && <div className="errors">{errors.imageUrl}</div>}
+        {errors.imageUrl && <div className="error-text">{errors.imageUrl}</div>}
       </div>
 
-      <div className='about-instructions'>
+      <div className='about-instructions section-divider'>
         <h2>Please describe your event:</h2>
         <label>
           <textarea
             placeholder="Please include at least 30 characters"
             value={about}
             onChange={(e) => setAbout(e.target.value)}
+            className="input-box"
           />
         </label>
-        {errors.about && <div className="errors">{errors.about}</div>}
+        {errors.about && <div className="error-text">{errors.about}</div>}
       </div>
-
-
-      <button type="submit">Create Event</button>
+      <button type="submit" className="submit-button">
+        {formType === "Update Event" ? "Update Event" : "Create Event"}
+      </button>
     </form>
   );
 };

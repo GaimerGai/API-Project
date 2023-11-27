@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { fetchEvents } from "../../store/event";
 import { Link } from "react-router-dom";
 import EventIndexItem from "./EventsIndexItem";
+import '../Events/Events.css'
 
 
 function Events() {
@@ -17,17 +18,34 @@ function Events() {
   }, [dispatch]);
 
   return (
-    <div>
-      <h2>Events   <Link to="/groups">Groups</Link></h2>
-      <h3>Events in Meetup</h3>
-      <ul>
-        {Object.values(events).map((event) => (
-            <Link to={`/events/${event.id}`}>{<EventIndexItem
-              event={event}
-              key={event.id}
-            />}</Link>
-        ))}
-      </ul>
+    <div className="container-wrapper">
+      <div className="header-links">
+        <h2>
+          <Link to="/events" className="event-link-on-event-page">
+            Events
+          </Link>
+        </h2>
+        <h2>
+          <Link to="/groups" className="group-link-on-event-page">
+            Groups
+          </Link>
+        </h2>
+      </div>
+      <div className="event-container">
+        <h3>Events in Meetup</h3>
+        <ul className="event-list">
+          {Object.values(events).map((event) => (
+            <li key={event.id} className="event-list-item">
+              <Link to={`/events/${event.id}`}>
+                <img src={event.previewImage} alt={event.name} />
+              </Link>
+              <div className="text-content">
+                <EventIndexItem event={event} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

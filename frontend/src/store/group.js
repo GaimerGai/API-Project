@@ -7,6 +7,7 @@ const CREATE_GROUP = 'groups/createGroup';
 const UPDATE_GROUP = 'groups/updateGroup';
 const DELETE_GROUP = 'groups/deleteGroup';
 const GET_EVENT_BY_GROUP = 'groups/getEventsByGroup'
+const CREATE_GROUP_IMG = 'groups/createGroupImage'
 
 /**  Action Creators: */
 const loadGroups = (groups) => ({
@@ -37,6 +38,12 @@ const deleteGroup = (group) => ({
 const getEventsByGroup = (group) => ({
   type: GET_EVENT_BY_GROUP,
   group
+})
+
+const createGroupImage = (groupId, img) =>({
+  type: CREATE_GROUP_IMG,
+  groupId,
+  img
 })
 
 /** Thunk Action Creators: */
@@ -113,6 +120,20 @@ export const deleteSelectedGroup = (groupId) => async (dispatch) => {
   return res;
 };
 
+export const createGroupImageMaker = (groupId,img)=>async(dispatch)=>{
+  const res= await csrfFetch(`/api/groups/${groupId}/images`,{
+    method: "POST",
+    body: JSON.stringify(img)
+  })
+  const data = await res.json()
+  if (res.ok) {
+    dispatch(createGroupImage(data));
+    return data
+  } else {
+    throw res;
+  }
+  }
+
 const groupsReducer = (state = { groups: {}, currGroup: {}, Events: {} }, action) => {
   switch (action.type) {
     case LOAD_GROUPS:
@@ -147,6 +168,14 @@ const groupsReducer = (state = { groups: {}, currGroup: {}, Events: {} }, action
       let event = {...state.Events}
       event = action.group.Events
       return {...state,Events:event}
+    }
+
+    case CREATE_GROUP_IMG:{
+      const newState = {...state}
+      newState.currGroup.GroupImages = []
+      console.log("This is the action", action)
+      newState.currGroup.GroupImages.push(action.groupId.url)
+      return newState
     }
 
     default:

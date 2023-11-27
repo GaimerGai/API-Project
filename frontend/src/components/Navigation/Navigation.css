@@ -1,5 +1,31 @@
+.logo-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-.profile-button-complete{
-  background-color: yellow;;
-  float: right;
+.buttons-container {
+  display: flex;
+  align-items: center;
+}
+
+.navigation-button {
+  cursor: default;
+  margin-right: 10px;
+}
+
+.navigation-button:hover {
+  cursor: pointer;
+}
+
+.profile-dropdown {
+  top: 100%;
+  left: 0;
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }

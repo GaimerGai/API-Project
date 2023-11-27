@@ -7,7 +7,7 @@ import GroupForm from "./GroupForm";
 const EditGroupForm = () => {
     const dispatch = useDispatch();
     const { groupId } = useParams();
-    const group = useSelector((state) => state.groups.currGroup); // populate from Redux store
+    const group = useSelector((state) => state.groups.currGroup); 
 
     useEffect(() => {
         dispatch(fetchGroupById(groupId));
@@ -15,7 +15,6 @@ const EditGroupForm = () => {
 
     if (!group) return <></>;
 
-    /* **DO NOT CHANGE THE RETURN VALUE** */
     return (
         Object.keys(group).length > 1 && (
             <>

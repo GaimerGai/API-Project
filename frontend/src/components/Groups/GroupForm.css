@@ -1,0 +1,38 @@
+.group-form-container {
+  text-align: left;
+  max-width: 600px;
+
+}
+
+.group-title {
+  color: teal;
+}
+
+.section-divider {
+  border-bottom: 2px solid black;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.error-text {
+  color: red;
+}
+
+.input-box {
+  border: 1px solid black;
+  background-color: #d3d3d3;
+  color: grey;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.submit-button {
+  background-color: red;
+  color: white;
+  border: 2px solid black;
+  border-radius: 5px;
+  padding: 10px;
+  text-shadow: 1px 1px 1px black;
+}
+
